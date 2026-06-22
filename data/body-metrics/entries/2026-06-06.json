@@ -1,0 +1,29 @@
+{
+  "date": "2026-06-06",
+  "status": "partial",
+  "user": "Daniel Almeida",
+  "source_of_truth": "local-canonical",
+  "measurements": {
+    "weight_kg": 104.6,
+    "bmi": null,
+    "muscle_mass_kg": null
+  },
+  "activity": {
+    "steps": 4421,
+    "strength_training_minutes": null,
+    "cardio_minutes": null,
+    "other_activity": [
+      "caminhada leve"
+    ]
+  },
+  "estimates": {
+    "activity_kcal": null,
+    "tdee_kcal": null,
+    "net_balance_kcal": null
+  },
+  "notes": [
+    "Registo introduzido pelo utilizador para 2026-06-06.",
+    "BMI e massa muscular não fornecidos.",
+    "Treino de força e cardio não fornecidos."
+  ]
+}

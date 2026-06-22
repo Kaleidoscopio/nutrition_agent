@@ -1,0 +1,61 @@
+{
+    "date": "2026-06-19",
+    "status": "complete",
+    "user": "Daniel Almeida",
+    "source_of_truth": "local-canonical",
+    "meals": {
+        "breakfast": [
+            {
+                "item": "P\u00e3o mistura (60g) com pouca manteiga.",
+                "kcal": 250,
+                "notes": "Estimate"
+            },
+            {
+                "item": "Caf\u00e9 com 100ml leite.",
+                "kcal": 40,
+                "notes": "Assuming skim milk estimate"
+            }
+        ],
+        "lunch": [
+            {
+                "item": "Salada de Frango com alface e tomate (150g de frango).",
+                "kcal": 400,
+                "notes": "Estimate"
+            },
+            {
+                "item": "Limonada sem a\u00e7\u00facar.",
+                "kcal": 0,
+                "notes": "Zero calorie estimate"
+            }
+        ],
+        "dinner": [
+			{
+                "item": "Salada de Atum com Grão e ovo cozido.",
+                "kcal": 300,
+                "notes": "Estimate"
+            }
+		],
+        "snacks": [
+            {
+                "item": "Gelado.",
+                "kcal": 220,
+                "notes": ""
+            },
+            {
+                "item": "Barra energ\u00e9tica.",
+                "kcal": 69,
+                "notes": ""
+            }
+        ]
+    },
+    "totals": {
+        "breakfast_kcal": 290,
+        "lunch_kcal": 400,
+        "dinner_kcal": 300,
+        "snacks_kcal": 289,
+        "daily_kcal": 1279
+    },
+    "fact_store.canonical_fact_id": null,
+    "fact_store.last_known_sync_status": "Pending",
+    "notes": "Registro alimentar para 2026-06-19."
+}

@@ -1,0 +1,31 @@
+{
+  "date": "2026-05-21",
+  "status": "complete",
+  "user": "Daniel Almeida",
+  "source_of_truth": "local-canonical",
+  "migrated_from_fact_store": true,
+  "meals": {
+    "breakfast": [],
+    "lunch": [],
+    "dinner": [],
+    "snacks": []
+  },
+  "totals": {
+    "breakfast_kcal": null,
+    "lunch_kcal": null,
+    "dinner_kcal": null,
+    "snacks_kcal": null,
+    "daily_kcal": 1890.0
+  },
+  "fact_store": {
+    "canonical_fact_id": 8,
+    "last_known_sync_status": "migrated_from_existing_fact_store_record"
+  },
+  "notes": [
+    "breakfast: sem detalhe estruturado no facto original",
+    "lunch: sem detalhe estruturado no facto original",
+    "dinner: sem detalhe estruturado no facto original",
+    "snacks: sem detalhe estruturado no facto original",
+    "Historical migration from fact_store free-text record. Item-level structure may be incomplete."
+  ]
+}

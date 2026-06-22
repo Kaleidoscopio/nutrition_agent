@@ -1,0 +1,68 @@
+{
+  "date": "2026-06-17",
+  "status": "partial",
+  "user": "Daniel Almeida",
+  "source_of_truth": "local-canonical",
+  "meals": {
+    "breakfast": [
+      {
+        "description": "Cereais e leite",
+        "kcal": 250.0,
+        "estimated": false
+      }
+    ],
+    "lunch": [
+      {
+        "description": "Salada de frango com alface, tomate, cenoura e croutons (150 g frango, 20 g croutons, 1 colher de chá de azeite)",
+        "kcal": 374.0,
+        "estimated": true
+      }
+    ],
+    "dinner": [
+      {
+        "description": "Taça de sopa de legumes",
+        "kcal": 90.0,
+        "estimated": true
+      },
+      {
+        "description": "Carne de vaca à bolonhesa (150 g)",
+        "kcal": 360.0,
+        "estimated": true
+      },
+      {
+        "description": "Arroz branco (150 g)",
+        "kcal": 195.0,
+        "estimated": true
+      }
+    ],
+    "snacks": [
+      {
+        "description": "Pêssego amarelo (160 g)",
+        "kcal": 62.0,
+        "estimated": true
+      },
+      {
+        "description": "Gelado",
+        "kcal": 140.0,
+        "estimated": false
+      }
+    ]
+  },
+  "totals": {
+    "breakfast_kcal": 250.0,
+    "lunch_kcal": 374.0,
+    "dinner_kcal": 645.0,
+    "snacks_kcal": 202.0,
+    "daily_kcal": 1471.0
+  },
+  "fact_store": {
+    "canonical_fact_id": null,
+    "last_known_sync_status": "not-synced"
+  },
+  "notes": [
+    "Almoço estimado com base em 150 g de frango, 20 g de croutons e 1 colher de chá de azeite; vegetais com impacto calórico baixo.",
+    "Snack estimado: pêssego amarelo 160 g ~62 kcal.",
+    "Jantar estimado: sopa de legumes ~90 kcal, vaca bolonhesa 150 g ~360 kcal, arroz branco 150 g ~195 kcal."
+  ],
+  "updated_at": "2026-06-17T20:32:18Z"
+}

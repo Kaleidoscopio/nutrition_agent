@@ -1,0 +1,55 @@
+{
+  "date": "2026-05-26",
+  "status": "complete",
+  "user": "Daniel Almeida",
+  "source_of_truth": "local-canonical",
+  "migrated_from_fact_store": true,
+  "meals": {
+    "breakfast": [
+      {
+        "item": "70 g cereals (315.0 kcal) + 120 ml skim milk (40.8 kcal)",
+        "quantity": null,
+        "kcal": null,
+        "notes": "migrated from fact_store free text"
+      }
+    ],
+    "lunch": [
+      {
+        "item": "250 ml draft white wine (~205.0 kcal) + fried hake fillets with tomato rice (~750.0 kcal) + 1 digestive biscuit (~70.0 kcal)",
+        "quantity": null,
+        "kcal": null,
+        "notes": "migrated from fact_store free text"
+      }
+    ],
+    "dinner": [
+      {
+        "item": "fresh sausages with cabbage (~485.0 kcal) + 100 g white rice (~130.0 kcal) + 50 g black beans (~66.0 kcal)",
+        "quantity": null,
+        "kcal": null,
+        "notes": "migrated from fact_store free text"
+      }
+    ],
+    "snacks": [
+      {
+        "item": "cereal drinking yogurt (100.0 kcal) + 1 slice dark bread (~85.0 kcal)",
+        "quantity": null,
+        "kcal": null,
+        "notes": "migrated from fact_store free text"
+      }
+    ]
+  },
+  "totals": {
+    "breakfast_kcal": null,
+    "lunch_kcal": null,
+    "dinner_kcal": null,
+    "snacks_kcal": null,
+    "daily_kcal": 2246.8
+  },
+  "fact_store": {
+    "canonical_fact_id": 31,
+    "last_known_sync_status": "migrated_from_existing_fact_store_record"
+  },
+  "notes": [
+    "Historical migration from fact_store free-text record. Item-level structure may be incomplete."
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "date": "2026-05-27",
+  "status": "complete",
+  "user": "Daniel Almeida",
+  "source_of_truth": "local-canonical",
+  "migrated_from_fact_store": true,
+  "meals": {
+    "breakfast": [
+      {
+        "item": "70 g de cereais (315.0 kcal) + 120 ml de leite magro (~40.8 kcal)",
+        "quantity": null,
+        "kcal": null,
+        "notes": "migrated from fact_store free text"
+      }
+    ],
+    "lunch": [
+      {
+        "item": "Buga Ramen takeaway teriyaki chicken don (~929.2 kcal, estimado)",
+        "quantity": null,
+        "kcal": null,
+        "notes": "migrated from fact_store free text"
+      }
+    ],
+    "dinner": [
+      {
+        "item": "frango assado 250 g (~597.5 kcal) + batatas fritas 100 g (~312.0 kcal) + salada 100 g (~20.0 kcal)",
+        "quantity": null,
+        "kcal": null,
+        "notes": "migrated from fact_store free text"
+      }
+    ],
+    "snacks": []
+  },
+  "totals": {
+    "breakfast_kcal": null,
+    "lunch_kcal": null,
+    "dinner_kcal": null,
+    "snacks_kcal": null,
+    "daily_kcal": 2214.5
+  },
+  "fact_store": {
+    "canonical_fact_id": 34,
+    "last_known_sync_status": "migrated_from_existing_fact_store_record"
+  },
+  "notes": [
+    "Historical migration from fact_store free-text record. Item-level structure may be incomplete."
+  ]
+}

@@ -1,0 +1,72 @@
+{
+  "date": "2026-06-11",
+  "status": "complete",
+  "user": "Daniel Almeida",
+  "source_of_truth": "local-canonical",
+  "meals": {
+    "breakfast": [
+      {
+        "description": "Leite com Cereais",
+        "kcal": 230.0,
+        "estimated": false,
+        "source": "user"
+      }
+    ],
+    "lunch": [
+      {
+        "description": "Salada Grega Royal do Joshua's Shoarma",
+        "kcal": 700.0,
+        "estimated": true,
+        "source": "user+image"
+      },
+      {
+        "description": "Limonada 0,3 l",
+        "kcal": 120.0,
+        "estimated": true,
+        "source": "user"
+      },
+      {
+        "description": "Gelado",
+        "kcal": 200.0,
+        "estimated": false,
+        "source": "user"
+      }
+    ],
+    "dinner": [
+      {
+        "description": "Puré de batata 150 g",
+        "kcal": 127.5,
+        "estimated": true,
+        "source": "user"
+      },
+      {
+        "description": "Frango 100 g",
+        "kcal": 165.0,
+        "estimated": true,
+        "source": "user"
+      },
+      {
+        "description": "Banana",
+        "kcal": 105.0,
+        "estimated": true,
+        "source": "user"
+      }
+    ],
+    "snacks": []
+  },
+  "totals": {
+    "breakfast_kcal": 230.0,
+    "lunch_kcal": 1020.0,
+    "dinner_kcal": 397.5,
+    "snacks_kcal": 0.0,
+    "daily_kcal": 1647.5
+  },
+  "fact_store": {
+    "canonical_fact_id": 65,
+    "last_known_sync_status": "synced"
+  },
+  "notes": [
+    "Almoço estimado: Salada Grega Royal do Joshua's Shoarma ~700 kcal com base na foto e composição típica (folhas, queijo tipo feta, mistura de grãos/tabbouleh, sementes, molho e triângulos de pão torrado). Limonada 0,3 l estimada em ~120 kcal.",
+    "Jantar estimado com valores típicos: puré de batata ~85 kcal/100 g, frango ~165 kcal/100 g e banana média ~105 kcal."
+  ]
+}

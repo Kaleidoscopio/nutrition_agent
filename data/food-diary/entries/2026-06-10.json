@@ -1,0 +1,62 @@
+{
+  "date": "2026-06-10",
+  "status": "complete",
+  "user": "Daniel Almeida",
+  "source_of_truth": "local-canonical",
+  "meals": {
+    "breakfast": [
+      {
+        "description": "Cereais com leite",
+        "kcal": 230,
+        "estimated": false
+      }
+    ],
+    "lunch": [
+      {
+        "description": "Sopa Miso",
+        "kcal": 45,
+        "estimated": true
+      },
+      {
+        "description": "Sushi variado (300 g)",
+        "kcal": 450,
+        "estimated": true
+      },
+      {
+        "description": "Bolo Brisa de Mafra",
+        "kcal": 380,
+        "estimated": true
+      }
+    ],
+    "dinner": [
+      {
+        "description": "Salada de frango com alface, tomate e croutons temperada com azeite e vinagre (200 g total)",
+        "kcal": 320,
+        "estimated": true
+      }
+    ],
+    "snacks": [
+      {
+        "description": "gelado",
+        "kcal": 266,
+        "estimated": false
+      }
+    ]
+  },
+  "totals": {
+    "breakfast_kcal": 230.0,
+    "lunch_kcal": 875.0,
+    "dinner_kcal": 320.0,
+    "snacks_kcal": 266.0,
+    "daily_kcal": 1691.0
+  },
+  "fact_store": {
+    "canonical_fact_id": null,
+    "last_known_sync_status": "not_synced"
+  },
+  "notes": [
+    "Almoço estimado: sopa miso ~45 kcal, sushi variado 300 g ~450 kcal, bolo Brisa de Mafra ~380 kcal.",
+    "Jantar estimado: salada de frango 200 g total com ~80 g frango, ~80 g vegetais, ~20 g croutons, ~10 g azeite e vinagre; ~320 kcal.",
+    "Dia fechado após confirmação do utilizador."
+  ]
+}

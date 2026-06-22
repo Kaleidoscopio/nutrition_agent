@@ -1,0 +1,48 @@
+{
+  "date": "2026-06-02",
+  "status": "complete",
+  "user": "Daniel Almeida",
+  "source_of_truth": "local-canonical",
+  "migrated_from_fact_store": true,
+  "meals": {
+    "breakfast": [
+      {
+        "item": "pão de mistura torrado 125 g (~331.2 kcal, assumido ~265 kcal/100 g), manteiga ~10 g (~71.7 kcal, estimado), café com 100 ml de leite magro (~36.0 kcal, assumindo café simples ~2.0 kcal + leite magro 100 ml ~34.0 kcal)",
+        "quantity": null,
+        "kcal": null,
+        "notes": "migrated from fact_store free text"
+      }
+    ],
+    "lunch": [
+      {
+        "item": "sopa de legumes (~120.0 kcal, estimado como 1 taça), panado de frango (~420.0 kcal, estimado), arroz branco (~195.0 kcal, estimado como ~150 g cozido), salada (~20.0 kcal, estimado, sem molho contabilizado)",
+        "quantity": null,
+        "kcal": null,
+        "notes": "migrated from fact_store free text"
+      }
+    ],
+    "dinner": [
+      {
+        "item": "folhado de salsicha (~650.0 kcal, estimado para 1 unidade de tamanho normal), salada (~20.0 kcal, estimado, sem molho contabilizado), 1 maçã Granny Smith grande (~95.0 kcal, estimado)",
+        "quantity": null,
+        "kcal": null,
+        "notes": "migrated from fact_store free text"
+      }
+    ],
+    "snacks": []
+  },
+  "totals": {
+    "breakfast_kcal": null,
+    "lunch_kcal": null,
+    "dinner_kcal": null,
+    "snacks_kcal": null,
+    "daily_kcal": 1958.9
+  },
+  "fact_store": {
+    "canonical_fact_id": 42,
+    "last_known_sync_status": "migrated_from_existing_fact_store_record"
+  },
+  "notes": [
+    "Historical migration from fact_store free-text record. Item-level structure may be incomplete."
+  ]
+}

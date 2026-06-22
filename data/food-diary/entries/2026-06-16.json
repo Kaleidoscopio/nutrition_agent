@@ -1,0 +1,80 @@
+{
+  "date": "2026-06-16",
+  "status": "partial",
+  "user": "Daniel Almeida",
+  "source_of_truth": "local-canonical",
+  "meals": {
+    "breakfast": [
+      {
+        "description": "Cereais com leite",
+        "kcal": 250,
+        "estimated": false,
+        "source": "user"
+      }
+    ],
+    "lunch": [
+      {
+        "description": "Filetes de pescada fritos com polme 150 g",
+        "kcal": 405,
+        "estimated": true,
+        "source": "assistant_estimate"
+      },
+      {
+        "description": "Arroz de tomate 200 g",
+        "kcal": 260,
+        "estimated": true,
+        "source": "assistant_estimate"
+      },
+      {
+        "description": "Vinho branco à pressão 200 ml",
+        "kcal": 164,
+        "estimated": true,
+        "source": "assistant_estimate"
+      }
+    ],
+    "dinner": [
+      {
+        "description": "Atum (ao natural) com salada de grão + 1 c. sopa de azeite",
+        "kcal": 469,
+        "estimated": true,
+        "source": "assistant_estimate"
+      }
+    ],
+    "snacks": [
+      {
+        "description": "Gelado",
+        "kcal": 152,
+        "estimated": false,
+        "source": "user"
+      },
+      {
+        "description": "1 fatia de ananás",
+        "kcal": 30,
+        "estimated": true,
+        "source": "assistant_estimate"
+      },
+      {
+        "description": "1 fatia de abacaxi",
+        "kcal": 30,
+        "estimated": true,
+        "source": "assistant_estimate"
+      }
+    ]
+  },
+  "totals": {
+    "breakfast_kcal": 250,
+    "lunch_kcal": 829,
+    "dinner_kcal": 469,
+    "snacks_kcal": 212,
+    "daily_kcal": 1760
+  },
+  "fact_store": {
+    "canonical_fact_id": null,
+    "last_known_sync_status": "not_synced"
+  },
+  "notes": [
+    "Almoço estimado: filetes de pescada fritos com polme 150 g ~405 kcal, arroz de tomate 200 g ~260 kcal (≈130 kcal/100 g), vinho branco à pressão 200 ml ~164 kcal (≈82 kcal/100 ml).",
+    "Estimativa snacks: 1 fatia de ananás ~30 kcal e 1 fatia de abacaxi ~30 kcal.",
+    "Jantar ajustado: +1 colher de sopa de azeite (~119 kcal) no atum com salada de grão."
+  ]
+}

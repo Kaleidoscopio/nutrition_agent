@@ -1,0 +1,29 @@
+{
+  "date": "2026-06-08",
+  "status": "partial",
+  "user": "Daniel Almeida",
+  "source_of_truth": "local-canonical",
+  "measurements": {
+    "weight_kg": null,
+    "bmi": null,
+    "muscle_mass_kg": null,
+    "muscle_mass_percent": 29.4
+  },
+  "activity": {
+    "steps": 5700,
+    "strength_training_minutes": 30,
+    "cardio_minutes": null,
+    "other_activity": []
+  },
+  "estimates": {
+    "activity_kcal": null,
+    "tdee_kcal": null,
+    "net_balance_kcal": null
+  },
+  "notes": [
+    "Canonical daily body/activity metrics scaffold created on 2026-06-08.",
+    "Passos atualizados para 5700 em 2026-06-08.",
+    "Massa muscular registada como percentagem: 29.4% em 2026-06-08.",
+    "Treino de pesos registado: 30 minutos em 2026-06-08."
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "date": "2026-06-03",
+  "status": "complete",
+  "user": "Daniel Almeida",
+  "source_of_truth": "local-canonical",
+  "migrated_from_fact_store": true,
+  "meals": {
+    "breakfast": [
+      {
+        "item": "52 g de cereais (238.7 kcal, com base em 459 kcal/100 g), 200 g de leite magro (74.0 kcal, com base em 37 kcal/100 ml)",
+        "quantity": null,
+        "kcal": null,
+        "notes": "migrated from fact_store free text"
+      }
+    ],
+    "lunch": [
+      {
+        "item": "tosta com pasta de atum 300 g (~660.0 kcal, estimado com base em ~220 kcal/100 g), 1 Compal néctar de pêssego 200 ml (96.0 kcal, com base em 48 kcal/100 ml)",
+        "quantity": null,
+        "kcal": null,
+        "notes": "migrated from fact_store free text"
+      }
+    ],
+    "dinner": [
+      {
+        "item": "entrecosto de porco 300 g com osso qb (~840.0 kcal, estimado com base em ~280 kcal/100 g por haver osso), arroz branco 200 g (~260.0 kcal, estimado com base em ~130 kcal/100 g)",
+        "quantity": null,
+        "kcal": null,
+        "notes": "migrated from fact_store free text"
+      }
+    ],
+    "snacks": []
+  },
+  "totals": {
+    "breakfast_kcal": null,
+    "lunch_kcal": null,
+    "dinner_kcal": null,
+    "snacks_kcal": null,
+    "daily_kcal": 2168.7
+  },
+  "fact_store": {
+    "canonical_fact_id": 43,
+    "last_known_sync_status": "migrated_from_existing_fact_store_record"
+  },
+  "notes": [
+    "Historical migration from fact_store free-text record. Item-level structure may be incomplete."
+  ]
+}

@@ -1,0 +1,110 @@
+{
+  "date": "2026-06-07",
+  "status": "complete",
+  "user": "Daniel Almeida",
+  "source_of_truth": "local-canonical",
+  "meals": {
+    "breakfast": [
+      {
+        "item": "Cereais",
+        "quantity_g": 43,
+        "kcal_per_100g": 459,
+        "kcal": 197.37,
+        "notes": "Valor do rótulo: 459 kcal por 100 g"
+      },
+      {
+        "item": "Leite magro",
+        "quantity_g_ml": 100,
+        "kcal_per_100ml": 37,
+        "kcal": 37.0,
+        "notes": "Valor do rótulo: 37 kcal por 100 ml"
+      }
+    ],
+    "lunch": [
+      {
+        "item": "Salada mista com frango, mozzarella, tomate, pepino, pimentos, croutons, azeite virgem e vinagre",
+        "estimated_kcal_range": {
+          "low": 510,
+          "best": 560,
+          "high": 620
+        },
+        "kcal": 560.0,
+        "protein_g_est": 36,
+        "carbs_g_est": 28,
+        "fat_g_est": 30,
+        "notes": "Correção do utilizador: era frango em vez de atum; molho confirmado como azeite virgem e vinagre. Estimativa ainda depende sobretudo da quantidade de azeite, mozzarella e croutons."
+      }
+    ],
+    "dinner": [
+      {
+        "item": "Omelete com 3 ovos médios",
+        "quantity": 3,
+        "kcal": 198.0,
+        "notes": "Estimado como 66 kcal por ovo médio"
+      },
+      {
+        "item": "Queijo Limiano",
+        "quantity_g": 25,
+        "kcal_per_100g": 356,
+        "kcal": 89.0,
+        "notes": "Estimado como 1 fatia ~25 g"
+      },
+      {
+        "item": "Chouriço",
+        "quantity_g": 20,
+        "kcal_per_100g": 455,
+        "kcal": 91.0,
+        "notes": "Estimado com base em ~455 kcal/100 g"
+      },
+      {
+        "item": "Pão de mistura",
+        "quantity_g": 80,
+        "kcal_per_100g": 265,
+        "kcal": 212.0,
+        "notes": "Estimado com base em ~265 kcal/100 g"
+      }
+    ],
+    "snacks": [
+      {
+        "item": "Duas fatias de ananás",
+        "quantity": 2,
+        "kcal": 42.0,
+        "notes": "Estimado como 2 fatias de ananás fresco"
+      },
+      {
+        "item": "Gelado de caramelo",
+        "kcal": 224.0,
+        "notes": "Valor indicado pelo utilizador"
+      },
+      {
+        "item": "Iogurte líquido",
+        "kcal": 107.0,
+        "notes": "Valor indicado pelo utilizador"
+      },
+      {
+        "item": "Tarte de maçã Vegan",
+        "kcal": 200.0,
+        "notes": "Valor indicado pelo utilizador"
+      }
+    ]
+  },
+  "totals": {
+    "breakfast_kcal": 234.37,
+    "lunch_kcal": 560.0,
+    "dinner_kcal": 590.0,
+    "snacks_kcal": 573.0,
+    "daily_kcal": 1957.37
+  },
+  "fact_store": {
+    "canonical_fact_id": 52,
+    "last_known_sync_status": "local-updated-pending-fact-store-sync"
+  },
+  "notes": [
+    "Dia iniciado com pequeno-almoço.",
+    "Almoço corrigido pelo utilizador em 2026-06-07: frango em vez de atum; molho de azeite virgem e vinagre.",
+    "Snacks atualizados em 2026-06-07 com ananás e gelado de caramelo.",
+    "Snacks atualizados em 2026-06-07 com iogurte líquido e tarte de maçã vegan.",
+    "Jantar atualizado em 2026-06-07 com omelete, queijo Limiano, chouriço e pão de mistura.",
+    "Dia fechado em 2026-06-07 após confirmação do utilizador."
+  ]
+}

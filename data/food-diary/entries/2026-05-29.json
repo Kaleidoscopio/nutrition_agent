@@ -1,0 +1,48 @@
+{
+  "date": "2026-05-29",
+  "status": "complete",
+  "user": "Daniel Almeida",
+  "source_of_truth": "local-canonical",
+  "migrated_from_fact_store": true,
+  "meals": {
+    "breakfast": [
+      {
+        "item": "Iogurte Natural açucarado (Lidl) 125 g (~118.8 kcal, estimado com base em ~95 kcal/100 g), 70 g de cereais (315.0 kcal)",
+        "quantity": null,
+        "kcal": null,
+        "notes": "migrated from fact_store free text"
+      }
+    ],
+    "lunch": [
+      {
+        "item": "Caril de gambas com arroz branco e salada (~750.0 kcal, estimado), semi-frio de chocolate com bolacha (~420.0 kcal, estimado)",
+        "quantity": null,
+        "kcal": null,
+        "notes": "migrated from fact_store free text"
+      }
+    ],
+    "dinner": [
+      {
+        "item": "carne picada 150 g (~375.0 kcal, assumido ~250 kcal/100 g), molho de tomate (~60.0 kcal, estimado), arroz branco 150 g (~195.0 kcal), batata doce frita 100 g (~250.0 kcal, estimado)",
+        "quantity": null,
+        "kcal": null,
+        "notes": "migrated from fact_store free text"
+      }
+    ],
+    "snacks": []
+  },
+  "totals": {
+    "breakfast_kcal": null,
+    "lunch_kcal": null,
+    "dinner_kcal": null,
+    "snacks_kcal": null,
+    "daily_kcal": 2483.8
+  },
+  "fact_store": {
+    "canonical_fact_id": 36,
+    "last_known_sync_status": "migrated_from_existing_fact_store_record"
+  },
+  "notes": [
+    "Historical migration from fact_store free-text record. Item-level structure may be incomplete."
+  ]
+}

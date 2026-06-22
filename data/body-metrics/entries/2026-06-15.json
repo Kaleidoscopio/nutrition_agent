@@ -1,0 +1,29 @@
+{
+  "date": "2026-06-15",
+  "status": "partial",
+  "user": "Daniel Almeida",
+  "source_of_truth": "local-canonical",
+  "measurements": {
+    "weight_kg": null,
+    "bmi": null,
+    "muscle_mass_kg": null,
+    "muscle_mass_pct": null,
+    "body_fat_pct": null
+  },
+  "activity": {
+    "steps": null,
+    "strength_training_minutes": 30,
+    "cardio_minutes": null,
+    "other_activity": [
+      "pesos"
+    ]
+  },
+  "estimates": {
+    "activity_kcal": null,
+    "tdee_kcal": null,
+    "net_balance_kcal": null
+  },
+  "notes": [
+    "Atividade diária registada incrementalmente: 30 minutos de pesos."
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "date": "2026-06-11",
+  "status": "partial",
+  "user": "Daniel Almeida",
+  "source_of_truth": "local-canonical",
+  "measurements": {
+    "weight_kg": 104.0,
+    "bmi": null,
+    "muscle_mass_kg": null,
+    "muscle_mass_pct": null,
+    "body_fat_pct": null
+  },
+  "activity": {
+    "steps": 4000,
+    "strength_training_minutes": null,
+    "cardio_minutes": null,
+    "other_activity": null
+  },
+  "estimates": {
+    "activity_kcal": null,
+    "tdee_kcal": null,
+    "net_balance_kcal": null
+  },
+  "notes": []
+}

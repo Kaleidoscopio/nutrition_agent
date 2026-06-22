@@ -1,0 +1,55 @@
+{
+  "date": "2026-05-31",
+  "status": "complete",
+  "user": "Daniel Almeida",
+  "source_of_truth": "local-canonical",
+  "migrated_from_fact_store": true,
+  "meals": {
+    "breakfast": [
+      {
+        "item": "Iogurte Natural açucarado (Lidl) 125 g (~118.8 kcal, estimado com base em ~95 kcal/100 g), 70 g de cereais (315.0 kcal)",
+        "quantity": null,
+        "kcal": null,
+        "notes": "migrated from fact_store free text"
+      }
+    ],
+    "lunch": [
+      {
+        "item": "bowl caseira de salmão fumado 100 g (117.0 kcal, estimado), arroz 100 g (130.0 kcal, estimado), salada de alface e tomate 100 g (18.0 kcal, estimado), abacate 70 g (112.0 kcal, estimado), manga 70 g (42.0 kcal, estimado), molho de soja (~0 kcal não contabilizado por quantidade não indicada)",
+        "quantity": null,
+        "kcal": null,
+        "notes": "migrated from fact_store free text"
+      }
+    ],
+    "dinner": [
+      {
+        "item": "sopa de legumes (~120.0 kcal, estimado como 1 taça) e 1 fatia de pizza de pepperoni 150 g (~399.0 kcal, estimado com base em ~266 kcal/100 g)",
+        "quantity": null,
+        "kcal": null,
+        "notes": "migrated from fact_store free text"
+      }
+    ],
+    "snacks": [
+      {
+        "item": "iogurte e 1 pão de mistura com manteiga e fiambre (~550.0 kcal, conforme indicado pelo utilizador)",
+        "quantity": null,
+        "kcal": null,
+        "notes": "migrated from fact_store free text"
+      }
+    ]
+  },
+  "totals": {
+    "breakfast_kcal": null,
+    "lunch_kcal": null,
+    "dinner_kcal": null,
+    "snacks_kcal": null,
+    "daily_kcal": 1921.8
+  },
+  "fact_store": {
+    "canonical_fact_id": 40,
+    "last_known_sync_status": "migrated_from_existing_fact_store_record"
+  },
+  "notes": [
+    "Historical migration from fact_store free-text record. Item-level structure may be incomplete."
+  ]
+}

@@ -1,0 +1,79 @@
+{
+  "date": "2026-06-14",
+  "status": "complete",
+  "user": "Daniel Almeida",
+  "source_of_truth": "local-canonical",
+  "meals": {
+    "breakfast": [
+      {
+        "item": "Cereais com leite",
+        "kcal": 260,
+        "estimated": false
+      }
+    ],
+    "lunch": [
+      {
+        "item": "Almôndegas de carne caseiras com molho de tomate",
+        "grams": 200,
+        "kcal": 473.0,
+        "estimated": true,
+        "assumption": "estimado como preparação caseira; ~170 g de almôndegas a ~240 kcal/100 g + contribuição moderada do molho de polpa de tomate, alho, cebola e azeite"
+      },
+      {
+        "item": "Arroz selvagem cozido",
+        "grams": 150,
+        "kcal": 151.5,
+        "estimated": true,
+        "assumption": "assumido ~101 kcal/100 g para arroz selvagem cozido"
+      }
+    ],
+    "dinner": [
+      {
+        "item": "Empada de frango Lidl (idêntica à do Mercadona)",
+        "grams": 200,
+        "kcal": 540.0,
+        "estimated": true,
+        "assumption": "estimado por equivalência à empada de frango do Mercadona, ~270 kcal/100 g"
+      },
+      {
+        "item": "1 fatia de ananás",
+        "kcal": 80.0,
+        "estimated": false,
+        "assumption": "valor fornecido pelo utilizador"
+      },
+      {
+        "item": "Salada de alface e tomate com azeite e vinagre",
+        "kcal": 90.0,
+        "estimated": true,
+        "assumption": "estimado como salada simples com ~1 colher de sopa de azeite; vegetais com impacto calórico baixo"
+      }
+    ],
+    "snacks": [
+      {
+        "item": "Gelado",
+        "kcal": 140.0,
+        "estimated": false
+      },
+      {
+        "item": "Iogurte com ananás natural",
+        "kcal": 200.0,
+        "estimated": false
+      }
+    ]
+  },
+  "totals": {
+    "breakfast_kcal": 260,
+    "lunch_kcal": 624.5,
+    "dinner_kcal": 710.0,
+    "snacks_kcal": 340.0,
+    "daily_kcal": 1934.5
+  },
+  "fact_store": {
+    "canonical_fact_id": 68,
+    "last_known_sync_status": "synced"
+  },
+  "notes": [
+    "Almoço estimado com base em receita caseira sem rótulo; o azeite usado no molho pode mexer bastante na conta.",
+    "Jantar estimado: empada assumida pela equivalente do Mercadona; salada estimada com ~1 c. sopa de azeite. Ajustar se o rótulo do Lidl ou a quantidade de azeite forem diferentes."
+  ]
+}
