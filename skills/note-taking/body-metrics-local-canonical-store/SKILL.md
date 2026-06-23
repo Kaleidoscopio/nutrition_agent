@@ -42,9 +42,7 @@ The agent MUST adhere exactly to the following JSON structure.
     "other_activity": []
   },
   "estimates": {
-    "activity_kcal": null,
-    "tdee_kcal": null,
-    "net_balance_kcal": null
+    "activity_kcal": null
   },
   "notes": []
 }
@@ -72,10 +70,18 @@ Interpretation rules:
 - decimal commas are normal; store normalized JSON numbers
 - if units are omitted, only infer the obvious ones (`peso` in kg, `passos` as count, training/cardio in minutes)
 
+Calculating `estimates.activity_kcal` (DO NOT INVENT, USE FORMULAS):
+If the user does not explicitly state the calories burned, you must calculate an estimate by summing the following base rules:
+- **Steps:** (Total steps / 1000) * 40 kcal (e.g., 5000 steps = 200 kcal).
+- **Strength Training:** minutes * 5 kcal.
+- **Cardio / Other Activity:** minutes * 8 kcal (if duration is mentioned). 
+Sum all applicable values. If no physical activity metrics are provided, set `activity_kcal` to `null`.
+
 # Pitfalls
 - Do not do date arithmetic mentally.
 - Do not create multiple files for the same date.
 - Do not mark missing metrics as zero; use `null`.
+- Do not invent random calorie values; stick to the provided math formulas.
 
 # Verification
 Before finishing:

@@ -4,6 +4,7 @@ CREATE TABLE daily_expenditure (
     entry_date TEXT NOT NULL,
     user_name TEXT NOT NULL,
     status TEXT NOT NULL CHECK(status IN ('partial', 'complete', 'processed')),
+    bmr_kcal INTEGER DEFAULT 0,       -- <--- NOVA COLUNA: Taxa Metabólica Basal
     activity_kcal INTEGER DEFAULT 0,  -- Calories burned via exercise/steps
     tdee_kcal INTEGER DEFAULT 0,      -- Total daily expenditure (BMR + activity_kcal)
     net_balance_kcal INTEGER DEFAULT 0, -- daily_kcal (from daily_meal) - tdee_kcal

@@ -2,8 +2,37 @@ import json
 import sqlite3
 import sys
 from pathlib import Path
+from datetime import datetime
 
 DB_PATH = "/home/droque/.hermes/data/db/food_diary.db"
+
+# Define as tuas constantes biológicas aqui (ou importa de um config.json)
+USER_HEIGHT_CM = 165            # <-- Substituir pela altura real
+USER_BIRTH_DATE = "1973-08-21"  # <-- Substituir pela data de nascimento
+
+def calculate_age(birth_date_str: str, entry_date_str: str) -> int:
+    """Calcula a idade exata no momento em que a atividade ocorreu."""
+    birth_date = datetime.strptime(birth_date_str, "%Y-%m-%d")
+    entry_date = datetime.strptime(entry_date_str, "%Y-%m-%d")
+    
+    # Subtrai os anos e retira 1 se o dia de anos ainda não tiver chegado nesse ano
+    age = entry_date.year - birth_date.year - ((entry_date.month, entry_date.day) < (birth_date.month, birth_date.day))
+    return age
+
+def get_latest_weight(conn: sqlite3.Connection, user_name: str) -> float:
+    """Vai buscar o último peso registado à base de dados, caso não haja pesagem hoje."""
+    cursor = conn.execute(
+        """
+        SELECT weight_kg 
+        FROM body_metrics 
+        WHERE user_name = ? AND weight_kg IS NOT NULL 
+        ORDER BY entry_date DESC LIMIT 1
+        """,
+        (user_name,)
+    )
+    row = cursor.fetchone()
+    # Se não houver histórico absolutamente nenhum, assume um peso base para não quebrar a fórmula
+    return row[0] if row else 80.0
 
 def load_json(json_path: str) -> dict:
     path = Path(json_path)
@@ -48,10 +77,32 @@ def upsert_expenditure_summary(conn: sqlite3.Connection, data: dict, consumed_kc
     estimates = data.get("estimates") or {}
     activity_kcal = estimates.get("activity_kcal") or 0
     tdee_kcal = estimates.get("tdee_kcal") or 0
-    
-    # Calculate net balance using the retrieved daily_meal calories
     net_balance_kcal = estimates.get("net_balance_kcal")
-    if net_balance_kcal is None and tdee_kcal > 0:
+
+    # 1. Obter o peso: Tenta ler do JSON de hoje, senão vai buscar ao histórico
+    weight_kg = data.get("measurements", {}).get("weight_kg")
+    if weight_kg is None:
+        weight_kg = get_latest_weight(conn, user)
+
+    # 2. Calcular a idade exata no dia da atividade
+    current_age = calculate_age(USER_BIRTH_DATE, date)
+
+    # 3. Cálculo Determinístico do BMR (Mifflin-St Jeor) e Gasto Base (Sedentário)
+    # BMR = (10 × weight) + (6.25 × height) - (5 × age) + 5
+    bmr_kcal = int((10 * weight_kg) + (6.25 * USER_HEIGHT_CM) - (5 * current_age) + 5)
+    
+    # TDEE Base assumindo vida sedentária (BMR * 1.2)
+    bmr_kcal = int(bmr_kcal * 1.2)
+
+    # 4. Ler calorias ativas do JSON (exercício extra)
+    estimates = data.get("estimates", {})
+    activity_kcal = estimates.get("activity_kcal") or 0
+
+    # Calculate net balance using the retrieved daily_meal calories
+    if tdee_kcal == 0 and bmr_kcal > 0:
+        tdee_kcal = bmr_kcal + activity_kcal
+
+    if (net_balance_kcal is None or net_balance_kcal == 0) and tdee_kcal > 0:
         net_balance_kcal = consumed_kcal - tdee_kcal
 
     notes_list = data.get("notes") or []
@@ -60,16 +111,17 @@ def upsert_expenditure_summary(conn: sqlite3.Connection, data: dict, consumed_kc
     cur.execute(
         """
         INSERT INTO daily_expenditure (
-            entry_date, user_name, status, activity_kcal, tdee_kcal, net_balance_kcal, notes
-        ) VALUES (?, ?, ?, ?, ?, ?, ?)
+            entry_date, user_name, status, bmr_kcal, activity_kcal, tdee_kcal, net_balance_kcal, notes
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(entry_date, user_name) DO UPDATE SET
             status = excluded.status,
+            bmr_kcal = excluded.bmr_kcal,
             activity_kcal = excluded.activity_kcal,
             tdee_kcal = excluded.tdee_kcal,
             net_balance_kcal = excluded.net_balance_kcal,
             notes = excluded.notes
         """,
-        (date, user, status, activity_kcal, tdee_kcal, net_balance_kcal, notes_str)
+        (date, user, status, bmr_kcal,activity_kcal, tdee_kcal, net_balance_kcal, notes_str)
     )
     
     # Return the autoincremented ID for foreign key usage
