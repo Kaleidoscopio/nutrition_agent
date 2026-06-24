@@ -1,5 +1,5 @@
 ---
-name: food-diary-daily-record
+name: food-diary-entry
 description: Maintain one canonical daily food diary record in the local JSON store, recover same-day context when needed, and mirror cautiously to fact_store only when explicitly required.
 ---
 
@@ -7,21 +7,42 @@ description: Maintain one canonical daily food diary record in the local JSON st
 Use when the user logs a meal, corrects an earlier food entry, asks for the current daily total, or wants the same day's diary carried forward across sessions.
 
 # Goal
-Keep exactly one canonical daily record per date under `~/.hermes/data/food-diary/entries/YYYY-MM-DD.json`.
+Keep exactly one canonical daily record per date under `/home/droque/.hermes/data/food-diary/entries/YYYY-MM-DD.json`.
 
-Treat the local canonical JSON record as the source of truth for day-level diary state. Use `fact_store` only for optional mirroring, older historical backfill, or aggregate analysis.
+Treat the local canonical JSON record as the source of truth for day-level diary state.
 
 # Required structure
-Each daily record should contain at least:
-- `date`
-- `status` (`partial` or `complete`)
-- `user`
-- `source_of_truth` = `local-canonical`
-- `meals.breakfast|lunch|dinner|snacks` arrays (`description`, `estimated_kcal`, `quantity`, `estimated` [true or false])
-- `totals.breakfast_kcal|lunch_kcal|dinner_kcal|snacks_kcal|daily_kcal`
-- `fact_store.canonical_fact_id`
-- `fact_store.last_known_sync_status` (`verified` or `pending`)
-- `notes`
+You must output a JSON object representing the daily meal log. Follow this exact TypeScript structure:
+
+type MealItem = {
+  description: string;   // Brief description of the food/drink
+  kcal: number;          // Total calories for this item
+  estimated: boolean;    // true if calculated/estimated, false if exact/known
+  assumption?: string;   // REQUIRED if estimated is true. Explain the calculation/logic.
+  food_id?: number;      // Optional. Include only if matched with a database item.
+  quantity?: string;     // Optional. e.g., "200 g", "150 ml".
+};
+
+interface DailyMealLog {
+  date: string;          // Format: "YYYY-MM-DD"
+  status: "partial" | "completed"; // REQUIRED. Use "partial" if the day is ongoing.
+  user: string;          // e.g., "Daniel Almeida"
+  source_of_truth: "local-canonical";
+  meals: {
+    breakfast: MealItem[];
+    lunch: MealItem[];
+    dinner: MealItem[];
+    snacks: MealItem[];
+  };
+  totals: {
+    breakfast_kcal: number; // Sum of breakfast items
+    lunch_kcal: number;     // Sum of lunch items
+    dinner_kcal: number;    // Sum of dinner items
+    snacks_kcal: number;    // Sum of snacks items
+    daily_kcal: number;     // Total sum of all meals
+  };
+  notes: string[];       // Array of strings summarizing data decisions (e.g., source of calories, assumptions made)
+}
 
 # Core rules
 1. Keep one canonical day record per date. Do not create competing partial summaries.
@@ -49,9 +70,8 @@ Each daily record should contain at least:
    - snacks total
    - daily total
 7. Write the updated canonical day file.
-8. If the task also requires a mirror summary in `fact_store`, write one canonical summary fact for the date and record the id/status explicitly.
-9. Verify by reading back the local file.
-10. Reply with the full fixed day structure:
+8. Verify by reading back the local file.
+9. Reply with the full fixed day structure:
    - Pequeno-almoço
    - Almoço
    - Jantar
@@ -82,7 +102,6 @@ Examples:
 - Do not overwrite the day from scratch without reading the existing file.
 - Do not initialize missing meal arrays blindly if you have not checked whether earlier meals existed.
 - Do not create multiple local files for the same date.
-- Do not claim `fact_store` is the source of truth for the current day when the local canonical file exists.
 - Do not return only the newly added meal when the task implies the running daily total matters.
 - Do not say something is saved if the write or readback was not actually verified.
 
@@ -92,4 +111,3 @@ Before finishing:
 - unrelated existing meals were preserved
 - totals match the meal items
 - any estimates are labeled
-- any claimed `fact_store` mirror status is explicit and verified

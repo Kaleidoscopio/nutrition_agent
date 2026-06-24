@@ -1,0 +1,126 @@
+{
+  "date": "2026-06-21",
+  "status": "complete",
+  "user": "Daniel Almeida",
+  "source_of_truth": "local-canonical",
+  "meals": {
+    "breakfast": [
+      {
+        "description": "Muesli",
+        "quantity": "40 g",
+        "kcal": 173.2,
+        "food_id": 2957,
+        "estimated": false
+      },
+      {
+        "description": "Leite magro",
+        "quantity": "80 ml",
+        "kcal": 27.5,
+        "food_id": 2078,
+        "estimated": false
+      }
+    ],
+    "lunch": [
+      {
+        "description": "Perna de frango assada",
+        "quantity": "150 g",
+        "kcal": 321.0,
+        "food_id": null,
+        "estimated": true
+      },
+      {
+        "description": "Tomate grande",
+        "quantity": "1 unidade grande",
+        "kcal": 33.0,
+        "food_id": 535,
+        "estimated": true
+      },
+      {
+        "description": "Azeite",
+        "quantity": "~1 colher de sopa",
+        "kcal": 119.0,
+        "food_id": 3173,
+        "estimated": true
+      },
+      {
+        "description": "Vinagre",
+        "quantity": "tempero",
+        "kcal": 3.0,
+        "food_id": null,
+        "estimated": true
+      },
+      {
+        "description": "Queijo fresco",
+        "quantity": "60 g",
+        "kcal": 63.0,
+        "food_id": 3489,
+        "estimated": false
+      },
+      {
+        "description": "Fatia de ananás",
+        "quantity": "1 fatia",
+        "kcal": 31.0,
+        "food_id": 819,
+        "estimated": true
+      }
+    ],
+    "dinner": [
+      {
+        "description": "Massa de arroz",
+        "quantity": "300 g",
+        "kcal": 330.0,
+        "food_id": null,
+        "estimated": true
+      },
+      {
+        "description": "Gambas",
+        "quantity": "60 g",
+        "kcal": 54.8,
+        "food_id": 1916,
+        "estimated": false
+      },
+      {
+        "description": "Fatia de ananás",
+        "quantity": "1 fatia",
+        "kcal": 31.0,
+        "food_id": 819,
+        "estimated": true
+      }
+    ],
+    "snacks": [
+      {
+        "description": "Gelado",
+        "quantity": "1 unidade",
+        "kcal": 332.0,
+        "food_id": null,
+        "estimated": false
+      },
+      {
+        "description": "Fatia de pão de centeio",
+        "quantity": "1 fatia (~40 g)",
+        "kcal": 85.2,
+        "food_id": 1140,
+        "estimated": true
+      }
+    ]
+  },
+  "totals": {
+    "breakfast_kcal": 200.7,
+    "lunch_kcal": 570.0,
+    "dinner_kcal": 415.8,
+    "snacks_kcal": 417.2,
+    "daily_kcal": 1603.7
+  },
+  "fact_store": {
+    "canonical_fact_id": null,
+    "last_known_sync_status": "pending"
+  },
+  "notes": [
+    "Estimativas usadas para perna de frango assada, tomate grande, azeite, vinagre, queijo fresco e fatia de ananás quando a base local não tinha correspondência exata por porção.",
+    "Azeite assumido como ~1 colher de sopa no tempero do tomate.",
+    "Queijo fresco corrigido para 60 g com valor calculado diretamente da base local (105 kcal/100 g).",
+    "Massa de arroz estimada em ~110 kcal/100 g cozida por falta de correspondência direta na base local; 300 g => ~330 kcal.",
+    "Fatia de pão de centeio estimada como ~40 g com base em pão de centeio integral embalado da base local (213 kcal/100 g).",
+    "Dia fechado após confirmação do utilizador."
+  ]
+}
