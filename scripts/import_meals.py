@@ -103,7 +103,7 @@ def resolve_food_id(item: dict, exact_map: dict, search_choices: list, choice_to
     Returns:
         (food_id, matched_food_name, match_score, match_method)
     """
-    explicit_id = item.get("id")
+    explicit_id = item.get("food_id")
     if explicit_id is not None:
         return int(explicit_id), None, None, "explicit_id"
 

@@ -15,7 +15,7 @@ Treat the local canonical JSON record as the source of truth for day-level diary
 You must output a JSON object representing the daily meal log. Follow this exact TypeScript structure:
 
 type MealItem = {
-  description: string;   // Brief description of the food/drink
+  description: string;   // Brief description of the food/drink. Important: Encode in RAW UTF-8
   kcal: number;          // Total calories for this item
   estimated: boolean;    // true if calculated/estimated, false if exact/known
   assumption?: string;   // REQUIRED if estimated is true. Explain the calculation/logic.
