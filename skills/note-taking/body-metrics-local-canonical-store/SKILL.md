@@ -1,13 +1,13 @@
 ---
 name: body-metrics-local-canonical-store
-description: Maintain a local canonical JSON store for daily body metrics and activity under ~/.hermes/data/body-metrics/.
+description: Maintain a local canonical JSON store for daily body metrics and activity under `/home/droque/.hermes/data/body-metrics/`.
 ---
 
 # When to use
 Use when the user logs daily body metrics or activity incrementally, especially in short messages like `ONTEM: peso 104,4; passos 8454; caminhada leve`.
 
 # Goal
-Keep one canonical local JSON record per date under `~/.hermes/data/body-metrics/entries/YYYY-MM-DD.json`.
+Keep one canonical local JSON record per date under `/home/droque/.hermes/data/body-metrics/entries/YYYY-MM-DD.json`.
 
 Treat the local file as the source of truth for:
 - weight
@@ -19,7 +19,7 @@ Treat the local file as the source of truth for:
 - derived calorie estimates when available
 
 # Directory layout
-- `~/.hermes/data/body-metrics/entries/YYYY-MM-DD.json`
+- `/home/droque/.hermes/data/body-metrics/entries/YYYY-MM-DD.json`
 - optional `README.md`
 
 # Record shape

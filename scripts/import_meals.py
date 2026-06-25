@@ -14,8 +14,13 @@ def load_json(json_path: str) -> dict:
     path = Path(json_path)
     if not path.exists():
         raise FileNotFoundError(f"JSON file not found: {json_path}")
-    with path.open("r", encoding="utf-8") as f:
-        return json.load(f)
+    try:
+        with path.open("r", encoding="utf-8") as f:
+            return json.load(f)
+    except UnicodeDecodeError:
+        # Se falhar, assume que o ficheiro está em ISO-8859-1 (Latin-1)
+        with path.open("r", encoding="latin-1") as f:
+            return json.load(f)
 
 def validate_payload(data: dict) -> None:
     required = ["date", "status", "user", "meals"]
