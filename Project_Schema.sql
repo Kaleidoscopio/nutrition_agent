@@ -62,6 +62,7 @@ CREATE TABLE "daily_meal_detail" (
 	"protein"	REAL(10, 2),
 	"carbs"	REAL(10, 2),
 	"fat"	REAL(10, 2),
+	"food_label"	TEXT,
 	PRIMARY KEY("id" AUTOINCREMENT),
 	CONSTRAINT "fk_meal" FOREIGN KEY("daily_meal_id") REFERENCES "daily_meal"("id")
 );
@@ -94,3 +95,12 @@ CREATE TABLE "food_master" (
 	UNIQUE("source","source_food_id")
 );
 	 
+CREATE TABLE users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_name TEXT NOT NULL UNIQUE,
+    email TEXT UNIQUE,
+    password_hash TEXT NOT NULL,
+    display_name TEXT,
+    is_active INTEGER NOT NULL DEFAULT 1,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+);

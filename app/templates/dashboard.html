@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<section class="page-head">
+    <div>
+        <p class="eyebrow">Daily dashboard</p>
+        <h1>{{ user.name or user.email }}</h1>
+        <p class="muted">Calories consumed and recent averages.</p>
+    </div>
+</section>
+
+<section class="card-grid">
+    <article class="stat-card">
+        <p class="stat-label">Today</p>
+        <h2>{{ stats.kcal_today }}</h2>
+        <p class="stat-meta">kcal consumed</p>
+    </article>
+
+    <article class="stat-card">
+        <p class="stat-label">Last 7 days</p>
+        <h2>{{ stats.kcal_avg_7d }}</h2>
+        <p class="stat-meta">avg kcal/day</p>
+    </article>
+
+    <article class="stat-card">
+        <p class="stat-label">Last 30 days</p>
+        <h2>{{ stats.kcal_avg_30d }}</h2>
+        <p class="stat-meta">avg kcal/day</p>
+    </article>
+
+    <article class="stat-card">
+        <p class="stat-label">Global</p>
+        <h2>{{ stats.kcal_avg_all }}</h2>
+        <p class="stat-meta">avg kcal/day</p>
+    </article>
+</section>
+
+<section class="detail-card">
+    <h3>Latest body metrics</h3>
+
+    {% if stats.latest_weight %}
+        <div class="metrics-list">
+            <div class="metric-row">
+                <span>Weight</span>
+                <strong>{{ stats.latest_weight["weight_kg"] or "-" }} kg</strong>
+            </div>
+            <div class="metric-row">
+                <span>Body fat</span>
+                <strong>{{ stats.latest_weight["body_fat_pct"] or "-" }}%</strong>
+            </div>
+            <div class="metric-row">
+                <span>Muscle mass</span>
+                <strong>{{ stats.latest_weight["muscle_mass_pct"] or "-" }}%</strong>
+            </div>
+            <div class="metric-row">
+                <span>Recorded on</span>
+                <strong>{{ stats.latest_weight["entry_date"] }}</strong>
+            </div>
+        </div>
+    {% else %}
+        <p class="muted">No body metrics recorded yet.</p>
+    {% endif %}
+</section>
+{% endblock %}

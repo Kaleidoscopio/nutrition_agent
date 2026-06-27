@@ -1,0 +1,55 @@
+# Copy the app to the desired destination folder, ex: /srv/www/nutrition-app
+
+# Linux commands to use
+sudo mkdir -p /srv/www/nutrition-app
+sudo chown -R deployuser:deployuser /srv/www/nutrition-app
+cd /srv/www/nutrition-app
+
+# Create a virtual environment
+python3 -m venv venv
+
+# Activate it to install packages
+source venv/bin/activate
+
+# Install Uvicorn and the app framework
+pip install uvicorn fastapi
+
+# Or use the requirements file and run
+pip install -r requirements.txt
+
+# create a systemd service file
+sudo touch /etc/systemd/system/nutrition-app.service
+sudo nano /etc/systemd/system/nutrition-app.service
+
+# place the following code inside the file
+[Unit]
+Description=Nutrition Web App
+After=network.target
+
+[Service]
+User=deployuser
+WorkingDirectory=/srv/www/nutrition-app
+ExecStart=/srv/www/myapp/venv/bin/uvicorn/.venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8001
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+
+# Open Firewall in Linux
+sudo ufw allow 8001/tcp
+
+# Start service
+sudo systemctl daemon-reload
+sudo systemctl enable nutrition-app.service
+sudo systemctl start nutrition-app.service
+
+#	Check if running
+sudo systemctl status nutrition-app.service
+
+#	Check Logs
+sudo journalctl -u nutrition-app.service -f
+
+# To run in Development/Debug mode
+cd /srv/www/nutrition-app
+source venv/bin/activate
+uvicorn app.main:app --host 0.0.0.0 --port 8001 --reload

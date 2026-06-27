@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Food Diary{% endblock %}
+
+{% block content %}
+<section class="hero-card">
+    <h1>Daily nutrition, simplified.</h1>
+    <p>Track meals, calories, and body metrics.</p>
+
+    {% if user %}
+        <a href="/dashboard" class="btn btn-primary">Open dashboard</a>
+    {% else %}
+        <a href="/login" class="btn btn-primary">Login</a>
+    {% endif %}
+</section>
+{% endblock %}

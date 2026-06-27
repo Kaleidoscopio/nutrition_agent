@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}Food diary{% endblock %}
+
+{% block content %}
+<section class="page-head page-head-split">
+    <div class="page-head-main">
+        <p class="eyebrow">Food diary</p>
+
+        <div class="page-head-title-row">
+            <h1>{{ entry_date }}</h1>
+
+            <form method="get" action="/diary" class="date-switcher">
+                <input type="date" name="entry_date" value="{{ entry_date }}">
+                <button type="submit" class="btn">Open</button>
+            </form>
+        </div>
+
+        <p class="muted">Daily calories: {{ daily_meal.daily_kcal or 0 }} kcal</p>
+    </div>
+</section>
+
+<section class="detail-card">
+    <h3>Add food</h3>
+{% if error_message %}
+    <div class="form-error">{{ error_message }}</div>
+{% endif %}
+    <form method="post" action="/diary/add" class="stack">
+        <input type="hidden" name="entry_date" value="{{ entry_date }}">
+
+        <label>Meal
+            <select name="meal_type" required>
+                <option value="breakfast" {% if last_meal_type == "breakfast" %}selected{% endif %}>Breakfast</option>
+                <option value="lunch" {% if last_meal_type == "lunch" %}selected{% endif %}>Lunch</option>
+                <option value="dinner" {% if last_meal_type == "dinner" %}selected{% endif %}>Dinner</option>
+                <option value="snacks" {% if last_meal_type == "snacks" %}selected{% endif %}>Snacks</option>
+            </select>
+        </label>
+
+        <label>Food
+            <input type="text" name="food_text" required placeholder="e.g. greek yogurt" value="{{ form_data.food_text if form_data else '' }}">
+        </label>
+
+        <label>Quantity
+            <input type="number" step="0.01" name="quantity" placeholder="e.g. 200" value="{{ form_data.quantity if form_data else '' }}">
+        </label>
+
+        <label>Unit
+            <input type="text" name="unit" placeholder="g or ml" value="{{ form_data.unit if form_data else '' }}">
+        </label>
+
+        <label>Manual calories
+            <input type="number" step="0.01" name="manual_calories" placeholder="Only needed if no match" value="{{ form_data.manual_calories if form_data else '' }}">
+        </label>
+
+        <button type="submit" class="btn btn-primary">Add item</button>
+    </form>
+</section>
+
+<section class="detail-card">
+    <h3>Entries</h3>
+
+    {% if items %}
+        <div class="metrics-list">
+            {% for item in items %}
+                <div class="metric-row diary-item">
+                    <div class="diary-row">
+                        <div>
+                            <strong>{{ item.food_label }}</strong>
+                            <div class="muted">
+                                {{ item.meal_type }} ·
+                                {{ item.quantity or "-" }} {{ item.unit or "" }} ·
+                                matched: {{ item.food_name or "default" }}
+                            </div>
+                        </div>
+                        <div>
+                            <strong>{{ item.calories or 0 }} kcal</strong>
+                        </div>
+                    </div>
+
+                    <div class="diary-actions">
+                        <details class="inline-edit">
+                            <summary>Edit</summary>
+
+                            <form method="post" action="/diary/update/{{ item.id }}" class="stack inline-edit-form">
+                                <label>Meal
+                                    <select name="meal_type" required>
+                                        <option value="breakfast" {% if item.meal_type == "breakfast" %}selected{% endif %}>Breakfast</option>
+                                        <option value="lunch" {% if item.meal_type == "lunch" %}selected{% endif %}>Lunch</option>
+                                        <option value="dinner" {% if item.meal_type == "dinner" %}selected{% endif %}>Dinner</option>
+                                        <option value="snacks" {% if item.meal_type == "snacks" %}selected{% endif %}>Snacks</option>
+                                    </select>
+                                </label>
+
+                                <label>Food
+                                    <input type="text" name="food_text" value="{{ item.food_label }}" required>
+                                </label>
+
+                                <label>Quantity
+                                    <input type="number" step="0.01" name="quantity" value="{{ item.quantity or '' }}">
+                                </label>
+
+                                <label>Unit
+                                    <input type="text" name="unit" value="{{ item.unit or '' }}" placeholder="g or ml">
+                                </label>
+
+                                <label>Manual calories
+                                    <input type="number" step="0.01" name="manual_calories" value="{{ item.calories or '' }}">
+                                </label>
+
+                                <div class="inline-edit-buttons">
+                                    <button type="submit" class="btn btn-primary">Save</button>
+                                    <button
+                                        type="button"
+                                        class="btn"
+                                        onclick="this.closest('details').open = false">Cancel</button>
+                                </div>
+                            </form>
+                        </details>
+
+                        <form method="post" action="/diary/delete/{{ item.id }}" class="delete-form">
+                            <button type="submit" class="btn">Delete</button>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="muted">No foods registered yet.</p>
+    {% endif %}
+</section>
+{% endblock %}

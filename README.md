@@ -1,12 +1,26 @@
 # nutrition_agent
 Support files for an AI Agent in charge of Nutrition and wellfare
 
+Uses:
+
+HTMX        - https://htmx.org/
+??? PicoCSS     - https://picocss.com/
+
+##
+
+Requires:
+
+fastapi             - https://fastapi.tiangolo.com/
+uvicorn[standard]
+jinja2
+python-dotenv
+bcrypt
+python-multipart
+itsdangerous
 
 O que eu faria como v1
 
-Com este schema, a primeira versão da app podia focar-se em 4 ecrãs:
-
-    Dashboard diário — calorias ingeridas, TDEE, balanço líquido, peso do dia;
+Food diary - Register daily meals, add/delete/modify foods, calories and quantities. Each item inserted should try to look for a match on the food_master table (using the food_alias for other names). If no match found use id 1 for food (food_master default) and allow use to register calories manually. If user adds food weight/volume calculate calories automatically. 
 
     Diário alimentar — refeições do dia, adicionar alimento, editar quantidades/macros;
 
@@ -26,12 +40,3 @@ Há duas coisas que eu afinaria desde já no desenho da app:
 Como base pragmática, eu tenderia a recalcular os totais a partir de daily_meal_detail sempre que editas refeições, e gravar daily_kcal só como cache/denormalização.
 Próximo passo
 
-O melhor próximo passo agora é eu transformar este schema num plano de app concreto, com:
-
-    páginas/endpoints,
-
-    queries principais,
-
-    e ordem de implementação.
-
-Se quiseres, avanço já para isso e proponho a estrutura da v1 em FastAPI + SQLite + HTMX por cima desta base.
