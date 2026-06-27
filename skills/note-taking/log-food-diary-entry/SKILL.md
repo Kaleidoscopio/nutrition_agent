@@ -1,5 +1,5 @@
 ---
-name: food-diary-entry
+name: log-food-diary-entry
 description: Maintain one canonical daily food diary record in the local JSON store, recover same-day context when needed, and mirror cautiously to fact_store only when explicitly required.
 ---
 
@@ -54,24 +54,71 @@ interface DailyMealLog {
 7. Only claim persistence that you actually verified.
 8. Mirror to `fact_store` only when the task explicitly needs it and the write can be verified.
 
+# Food lookup policy
+Before estimating calories for any food item, always search the local food database.
+
+Search order:
+
+1. Search the SQLite database:
+   - Database:
+     `/home/droque/.hermes/data/db/food_diary.db`
+   - Table:
+     `food_master`
+   - Search column:
+     `search_text`
+   - Matching:
+     Use fuzzy matching instead of exact string comparison.
+     Accept spelling mistakes, accents, plural/singular, aliases, different word order and common abbreviations.
+
+2. If a sufficiently confident match is found:
+   - Use the database nutritional information.
+   - Populate `food_id`.
+   - Set `estimated` to `false`.
+   - Do not perform an online search.
+
+3. Only if no acceptable local match exists:
+   - Search online.
+   - Estimate calories if necessary.
+   - Set `estimated=true`.
+   - Populate `assumption`.
+
+The local database is always considered the authoritative source whenever a suitable match exists.
+
+## Fuzzy matching acceptance rules
+A fuzzy match is considered acceptable when its confidence score is at least 90%.
+Confidence interpretation:
+- **≥90%**
+  - Accept automatically.
+  - Use the matched `food_id`.
+  - Use the nutritional values from the database.
+- **75–89%**
+  - If only one candidate clearly stands out, accept it.
+  - If multiple candidates are similarly likely, ask the user which one was intended.
+- **<75%**
+  - Treat as "not found".
+  - Continue with online lookup.
+When several candidates have similar confidence scores, never guess. Ask the user to clarify.
+
 # Workflow
 1. Resolve the target date with `terminal` when the user says `today`, `hoje`, `yesterday`, `ontem`, or similar.
-2. Parse the new meal/correction request and identify the target meal slot.
-3. Read `entries/YYYY-MM-DD.json` if it exists.
-4. If the local record is missing, suspiciously incomplete, or likely stale for the same date, use `session_search` with an explicit date token to recover same-day meals before writing.
-5. Merge the new meal items or corrections into the appropriate section:
+2. Parse the meal.
+3. Search the local food database using fuzzy matching for every food item.
+4. Only perform online lookup for items that could not be matched locally.
+5. Read `entries/YYYY-MM-DD.json` if it exists.
+6. If the local record is missing, suspiciously incomplete, or likely stale for the same date, use `session_search` with an explicit date token to recover same-day meals before writing.
+7. Merge the new meal items or corrections into the appropriate section:
    - add new items when the user is logging additional food
    - replace earlier estimates when the user provides better data
    - move items if the original date/meal slot was wrong
-6. Recompute:
+8. Recompute:
    - breakfast total
    - lunch total
    - dinner total
    - snacks total
    - daily total
-7. Write the updated canonical day file.
-8. Verify by reading back the local file.
-9. Reply with the full fixed day structure:
+9. Write the updated canonical day file.
+10. Verify by reading back the local file.
+11. Reply with the full fixed day structure:
    - Pequeno-almoço
    - Almoço
    - Jantar
