@@ -22,38 +22,69 @@
 
 <section class="detail-card">
     <h3>Add food</h3>
-{% if error_message %}
-    <div class="form-error">{{ error_message }}</div>
-{% endif %}
-    <form method="post" action="/diary/add" class="stack">
+
+    {% if error %}
+        <div class="form-error">{{ error }}</div>
+    {% endif %}
+    {% if success %}
+        <div class="form-success">{{ success }}</div>
+    {% endif %}
+
+    <form method="post" action="/diary/add" class="stack" id="add-food-form">
         <input type="hidden" name="entry_date" value="{{ entry_date }}">
+        <input type="hidden" name="selected_food_id" id="selected_food_id" value="{{ form_data.selected_food_id if form_data else '' }}">
+        <input type="hidden" name="manual_override" id="manual_override" value="{{ form_data.manual_override if form_data else '0' }}">
 
         <label>Meal
             <select name="meal_type" required>
-                <option value="breakfast" {% if last_meal_type == "breakfast" %}selected{% endif %}>Breakfast</option>
-                <option value="lunch" {% if last_meal_type == "lunch" %}selected{% endif %}>Lunch</option>
-                <option value="dinner" {% if last_meal_type == "dinner" %}selected{% endif %}>Dinner</option>
-                <option value="snacks" {% if last_meal_type == "snacks" %}selected{% endif %}>Snacks</option>
+                <option value="breakfast" {% if (form_data and form_data.meal_type == "breakfast") or last_meal_type == "breakfast" %}selected{% endif %}>Breakfast</option>
+                <option value="lunch" {% if (form_data and form_data.meal_type == "lunch") or last_meal_type == "lunch" %}selected{% endif %}>Lunch</option>
+                <option value="dinner" {% if (form_data and form_data.meal_type == "dinner") or last_meal_type == "dinner" %}selected{% endif %}>Dinner</option>
+                <option value="snacks" {% if (form_data and form_data.meal_type == "snacks") or last_meal_type == "snacks" %}selected{% endif %}>Snacks</option>
             </select>
         </label>
 
         <label>Food
-            <input type="text" name="food_text" required placeholder="e.g. greek yogurt" value="{{ form_data.food_text if form_data else '' }}">
+            <input
+                type="text"
+                name="food_text"
+                id="food_text"
+                required
+                placeholder="e.g. greek yogurt"
+                value="{{ form_data.food_text if form_data else '' }}">
         </label>
 
         <label>Quantity
-            <input type="number" step="0.01" name="quantity" placeholder="e.g. 200" value="{{ form_data.quantity if form_data else '' }}">
+            <input
+                type="number"
+                step="0.01"
+                name="quantity"
+                placeholder="e.g. 200"
+                value="{{ form_data.quantity if form_data else '' }}">
         </label>
 
         <label>Unit
-            <input type="text" name="unit" placeholder="g or ml" value="{{ form_data.unit if form_data else '' }}">
+            <select name="unit">
+                <option value="g" {% if not form_data or not form_data.unit or form_data.unit == "g" %}selected{% endif %}>g</option>
+                <option value="ml" {% if form_data and form_data.unit == "ml" %}selected{% endif %}>ml</option>
+            </select>
         </label>
 
         <label>Manual calories
-            <input type="number" step="0.01" name="manual_calories" placeholder="Only needed if no match" value="{{ form_data.manual_calories if form_data else '' }}">
+            <input
+                type="number"
+                step="0.01"
+                name="manual_calories"
+                id="manual_calories"
+                placeholder="Only needed for manual entry"
+                value="{{ form_data.manual_calories if form_data else '' }}">
         </label>
 
-        <button type="submit" class="btn btn-primary">Add item</button>
+        <p id="manual-hint" class="muted" hidden>Enter calories and then save as a manual entry.</p>
+
+        <div class="inline-edit-buttons">
+            <button type="submit" class="btn btn-primary">Add item</button>
+        </div>
     </form>
 </section>
 
@@ -70,7 +101,11 @@
                             <div class="muted">
                                 {{ item.meal_type }} ·
                                 {{ item.quantity or "-" }} {{ item.unit or "" }} ·
-                                matched: {{ item.food_name or "default" }}
+                                {% if item.food_id == 1 or not item.food_name %}
+                                    manual entry
+                                {% else %}
+                                    matched: {{ item.food_name }}{% if item.food_category %} ({{ item.food_category }}){% endif %}
+                                {% endif %}
                             </div>
                         </div>
                         <div>
@@ -83,6 +118,18 @@
                             <summary>Edit</summary>
 
                             <form method="post" action="/diary/update/{{ item.id }}" class="stack inline-edit-form">
+                                <input
+                                    type="hidden"
+                                    name="selected_food_id"
+                                    value="{{ item.food_id if item.food_id and item.food_id != 1 else '' }}"
+                                    class="selected-food-id-input">
+
+                                <input
+                                    type="hidden"
+                                    name="manual_override"
+                                    value="{% if item.food_id == 1 %}1{% else %}0{% endif %}"
+                                    class="manual-override-input">
+
                                 <label>Meal
                                     <select name="meal_type" required>
                                         <option value="breakfast" {% if item.meal_type == "breakfast" %}selected{% endif %}>Breakfast</option>
@@ -93,7 +140,7 @@
                                 </label>
 
                                 <label>Food
-                                    <input type="text" name="food_text" value="{{ item.food_label }}" required>
+                                    <input type="text" name="food_text" value="{{ item.food_label }}" required class="edit-food-text-input">
                                 </label>
 
                                 <label>Quantity
@@ -101,12 +148,29 @@
                                 </label>
 
                                 <label>Unit
-                                    <input type="text" name="unit" value="{{ item.unit or '' }}" placeholder="g or ml">
+                                    <select name="unit">
+                                        <option value="g" {% if not item.unit or item.unit == "g" %}selected{% endif %}>g</option>
+                                        <option value="ml" {% if item.unit == "ml" %}selected{% endif %}>ml</option>
+                                    </select>
                                 </label>
 
-                                <label>Manual calories
-                                    <input type="number" step="0.01" name="manual_calories" value="{{ item.calories or '' }}">
+                                <label>Calories
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        name="manual_calories"
+                                        value="{{ item.calories or '' }}"
+                                        placeholder="Set calories manually if needed"
+                                        class="manual-calories-input">
                                 </label>
+
+                                <p class="muted">
+                                    {% if item.food_id == 1 or not item.food_name %}
+                                        This item is currently saved as a manual entry.
+                                    {% else %}
+                                        This item is currently matched to {{ item.food_name }}{% if item.food_category %} ({{ item.food_category }}){% endif %}. Editing calories will save it as a manual entry.
+                                    {% endif %}
+                                </p>
 
                                 <div class="inline-edit-buttons">
                                     <button type="submit" class="btn btn-primary">Save</button>
@@ -129,4 +193,167 @@
         <p class="muted">No foods registered yet.</p>
     {% endif %}
 </section>
+
+<dialog id="match-dialog" aria-labelledby="match-dialog-title">
+    <form method="dialog" class="match-dialog-shell">
+        <div class="match-dialog-head">
+            <div>
+                <h3 id="match-dialog-title">Choose the correct food</h3>
+                <p class="muted">We found multiple matches. Pick one exact match or use manual calories.</p>
+            </div>
+            <button type="submit" class="btn" aria-label="Close">Close</button>
+        </div>
+    </form>
+
+    <div class="match-dialog-body">
+        <div class="stack">
+            <label>Category
+                <select id="match-category-filter">
+                    <option value="">All categories</option>
+                    {% if match_categories %}
+                        {% for category in match_categories %}
+                            <option value="{{ category }}">{{ category }}</option>
+                        {% endfor %}
+                    {% endif %}
+                </select>
+            </label>
+
+            <div id="match-results" class="match-results">
+                {% if match_candidates %}
+                    {% for candidate in match_candidates %}
+                        <button
+                            type="button"
+                            class="match-option"
+                            data-food-id="{{ candidate.id }}"
+                            data-food-name="{{ candidate.food_name }}"
+                            data-category="{{ candidate.food_category or 'Uncategorized' }}">
+                            <span class="match-option-name">{{ candidate.food_name }}</span>
+                            <span class="match-option-meta">{{ candidate.food_category or "Uncategorized" }}</span>
+                        </button>
+                    {% endfor %}
+                {% else %}
+                    <p class="muted">No match candidates available.</p>
+                {% endif %}
+            </div>
+
+            <div class="inline-edit-buttons">
+                <button type="button" class="btn btn-primary" id="use-manual-button">Use manual calories</button>
+            </div>
+        </div>
+    </div>
+</dialog>
+
+<script>
+(function () {
+    const dialog = document.getElementById("match-dialog");
+    const addForm = document.getElementById("add-food-form");
+    const categoryFilter = document.getElementById("match-category-filter");
+    const selectedFoodIdInput = document.getElementById("selected_food_id");
+    const manualOverrideInput = document.getElementById("manual_override");
+    const manualCaloriesInput = document.getElementById("manual_calories");
+    const manualHint = document.getElementById("manual-hint");
+    const optionButtons = Array.from(document.querySelectorAll(".match-option"));
+    const useManualButton = document.getElementById("use-manual-button");
+
+    function closeDialog() {
+        if (dialog && dialog.open) dialog.close();
+    }
+
+    function filterOptions() {
+        const selectedCategory = (categoryFilter?.value || "").trim().toLowerCase();
+
+        optionButtons.forEach((button) => {
+            const category = (button.dataset.category || "").trim().toLowerCase();
+            const shouldShow = !selectedCategory || category === selectedCategory;
+            button.style.display = shouldShow ? "flex" : "none";
+        });
+    }
+
+    if (addForm) {
+        addForm.addEventListener("submit", function () {
+            const hasCalories = manualCaloriesInput && manualCaloriesInput.value.trim() !== "";
+            const hasSelectedFood = selectedFoodIdInput && selectedFoodIdInput.value.trim() !== "";
+
+            if (hasCalories && !hasSelectedFood) {
+                manualOverrideInput.value = "1";
+            }
+        });
+    }
+
+    if (categoryFilter) {
+        categoryFilter.addEventListener("change", filterOptions);
+    }
+
+    optionButtons.forEach((button) => {
+        button.addEventListener("click", function () {
+            if (selectedFoodIdInput) selectedFoodIdInput.value = this.dataset.foodId || "";
+            if (manualOverrideInput) manualOverrideInput.value = "0";
+            closeDialog();
+            if (addForm) addForm.submit();
+        });
+    });
+
+    if (useManualButton) {
+        useManualButton.addEventListener("click", function () {
+            if (selectedFoodIdInput) selectedFoodIdInput.value = "";
+            if (manualOverrideInput) manualOverrideInput.value = "1";
+
+            const hasCalories = manualCaloriesInput && manualCaloriesInput.value.trim() !== "";
+
+            if (hasCalories) {
+                closeDialog();
+                if (addForm) addForm.submit();
+                return;
+            }
+
+            closeDialog();
+
+            if (manualHint) manualHint.hidden = false;
+            if (manualCaloriesInput) manualCaloriesInput.focus();
+        });
+    }
+
+    if (manualCaloriesInput) {
+        manualCaloriesInput.addEventListener("input", function () {
+            const hasCalories = this.value.trim() !== "";
+            if (manualOverrideInput) manualOverrideInput.value = hasCalories ? "1" : "0";
+            if (manualHint && hasCalories) manualHint.hidden = true;
+            if (hasCalories && selectedFoodIdInput) selectedFoodIdInput.value = "";
+        });
+    }
+
+    document.querySelectorAll(".inline-edit-form").forEach((form) => {
+        const caloriesInput = form.querySelector(".manual-calories-input");
+        const manualOverrideField = form.querySelector(".manual-override-input");
+        const selectedFoodIdField = form.querySelector(".selected-food-id-input");
+        const foodTextInput = form.querySelector(".edit-food-text-input");
+
+        if (caloriesInput && manualOverrideField) {
+            caloriesInput.addEventListener("input", function () {
+                const hasCalories = this.value.trim() !== "";
+                manualOverrideField.value = hasCalories ? "1" : "0";
+                if (hasCalories && selectedFoodIdField) {
+                    selectedFoodIdField.value = "";
+                }
+            });
+        }
+
+        if (foodTextInput && manualOverrideField && selectedFoodIdField) {
+            foodTextInput.addEventListener("input", function () {
+                selectedFoodIdField.value = "";
+                if (!caloriesInput || caloriesInput.value.trim() === "") {
+                    manualOverrideField.value = "0";
+                }
+            });
+        }
+    });
+
+    {% if show_match_modal %}
+    if (dialog && typeof dialog.showModal === "function") {
+        dialog.showModal();
+        filterOptions();
+    }
+    {% endif %}
+})();
+</script>
 {% endblock %}
