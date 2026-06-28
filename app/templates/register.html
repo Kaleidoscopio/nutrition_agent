@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}Register{% endblock %}
+
+{% block content %}
+<section class="detail-card">
+    <h1>Create account</h1>
+    <p class="muted">Set up your account and your initial body profile.</p>
+
+    {% if error %}
+        <div class="form-error">{{ error }}</div>
+    {% endif %}
+
+    <form method="post" action="/register" class="stack">
+        <label>Username
+            <input type="text" name="user_name" value="{{ values.user_name or '' }}" required>
+        </label>
+
+        <label>Email
+            <input type="email" name="email" value="{{ values.email or '' }}">
+        </label>
+
+        <label>Display name
+            <input type="text" name="display_name" value="{{ values.display_name or '' }}">
+        </label>
+
+        <label>Password
+            <input type="password" name="password" required>
+        </label>
+
+        <label>Confirm password
+            <input type="password" name="confirm_password" required>
+        </label>
+
+        <label>Sex
+            <select name="sex" required>
+                <option value="">Select…</option>
+                <option value="male" {% if values.sex == "male" %}selected{% endif %}>Male</option>
+                <option value="female" {% if values.sex == "female" %}selected{% endif %}>Female</option>
+            </select>
+        </label>
+
+        <label>Date of birth
+            <input type="date" name="date_of_birth" value="{{ values.date_of_birth or '' }}" required>
+        </label>
+
+        <label>Height (cm)
+            <input type="number" step="0.1" name="height_cm" value="{{ values.height_cm or '' }}" required>
+        </label>
+
+        <label>Starting weight (kg)
+            <input type="number" step="0.1" name="start_weight_kg" value="{{ values.start_weight_kg or '' }}" required>
+        </label>
+
+        <label>Activity level
+            <select name="activity_level" required>
+                {% for value, label in activity_levels.items() %}
+                    <option value="{{ value }}" {% if values.activity_level == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </label>
+
+        <div class="inline-edit-buttons">
+            <button type="submit" class="btn btn-primary">Register</button>
+            <a href="/login" class="btn">Login</a>
+        </div>
+    </form>
+</section>
+{% endblock %}

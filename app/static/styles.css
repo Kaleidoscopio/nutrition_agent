@@ -307,6 +307,15 @@ select {
     border-radius: 12px;
 }
 
+.form-success {
+    margin-bottom: var(--space-4);
+    padding: 0.9rem 1rem;
+    border: 1px solid #b7d8c8;
+    background: #eefaf2;
+    color: #20613d;
+    border-radius: 12px;
+}
+
 @media (min-width: 700px) {
     .card-grid {
         grid-template-columns: repeat(2, 1fr);
@@ -322,4 +331,32 @@ select {
     .date-switcher {
         grid-template-columns: 1fr auto;
     }
+}
+
+.hero-actions {
+    display: flex;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+    margin-top: var(--space-5);
+}
+
+.btn-secondary {
+    background: var(--surface);
+    color: var(--text);
+    border-color: var(--border);
+}
+
+.btn-secondary:hover {
+    background: var(--surface-2);
+}
+
+.auth-switch {
+    margin-top: var(--space-4);
+    text-align: center;
+    color: var(--muted);
+}
+
+.auth-switch a {
+    color: var(--primary);
+    font-weight: 600;
 }

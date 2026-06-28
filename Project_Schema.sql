@@ -22,6 +22,10 @@ CREATE TABLE "log_activities" (
 	"activity_type"	TEXT NOT NULL,
 	"duration_minutes"	INTEGER,
 	"activity_value"	TEXT,
+	"activity_label"	TEXT,
+	"intensity"	TEXT,
+	"calories_burned"	INTEGER DEFAULT 0,
+	"notes"	TEXT,
 	PRIMARY KEY("id" AUTOINCREMENT),
 	FOREIGN KEY("expenditure_id") REFERENCES "daily_expenditure"("id") ON DELETE CASCADE
 );
@@ -95,12 +99,18 @@ CREATE TABLE "food_master" (
 	UNIQUE("source","source_food_id")
 );
 	 
-CREATE TABLE users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_name TEXT NOT NULL UNIQUE,
-    email TEXT UNIQUE,
-    password_hash TEXT NOT NULL,
-    display_name TEXT,
-    is_active INTEGER NOT NULL DEFAULT 1,
-    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE "users" (
+	"id"	INTEGER,
+	"user_name"	TEXT NOT NULL UNIQUE,
+	"email"	TEXT UNIQUE,
+	"password_hash"	TEXT NOT NULL,
+	"display_name"	TEXT,
+	"is_active"	INTEGER NOT NULL DEFAULT 1,
+	"created_at"	TEXT DEFAULT CURRENT_TIMESTAMP,
+	"sex"	TEXT,
+	"date_of_birth"	TEXT,
+	"height_cm"	REAL,
+	"start_weight_kg"	REAL,
+	"activity_level"	TEXT NOT NULL CHECK("activity_level" IN ('sedentary', 'light', 'moderate', 'very_active', 'extra_active')),
+	PRIMARY KEY("id" AUTOINCREMENT)
 );

@@ -47,6 +47,10 @@
                 <strong>{{ stats.latest_weight["weight_kg"] or "-" }} kg</strong>
             </div>
             <div class="metric-row">
+                <span>BMI</span>
+                <strong>{{ stats.latest_weight["bmi"] or "-" }}</strong>
+            </div>
+            <div class="metric-row">
                 <span>Body fat</span>
                 <strong>{{ stats.latest_weight["body_fat_pct"] or "-" }}%</strong>
             </div>
@@ -61,6 +65,46 @@
         </div>
     {% else %}
         <p class="muted">No body metrics recorded yet.</p>
+    {% endif %}
+</section>
+
+<section class="detail-card">
+    <h3>Energy needs</h3>
+
+    {% if stats.energy.bmr and stats.energy.tdee %}
+        <div class="metrics-list">
+            <div class="metric-row">
+                <span>Resting burn (BMR)</span>
+                <strong>{{ stats.energy.bmr }} kcal/day</strong>
+            </div>
+            <div class="metric-row">
+                <span>Estimated maintenance</span>
+                <strong>{{ stats.energy.tdee }} kcal/day</strong>
+            </div>
+            <div class="metric-row">
+                <span>Today's net balance</span>
+                <strong>
+                    {% if stats.energy.net_balance > 0 %}
+                        +{{ stats.energy.net_balance }} kcal
+                    {% else %}
+                        {{ stats.energy.net_balance }} kcal
+                    {% endif %}
+                </strong>
+            </div>
+        </div>
+
+        <p class="muted">
+            Your BMR is the calories your body uses at rest. Your maintenance calories include daily activity.
+            Eat below maintenance to lose weight, around maintenance to maintain, and above maintenance to gain.
+        </p>
+
+        <p>
+            <strong>{{ stats.energy.message }}</strong>
+        </p>
+    {% else %}
+        <p class="muted">
+            Complete your profile with sex, date of birth, height, weight, and activity level to estimate your daily maintenance calories.
+        </p>
     {% endif %}
 </section>
 {% endblock %}

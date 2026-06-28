@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Body metrics{% endblock %}
+
+{% block content %}
+<section class="page-head">
+    <div>
+        <p class="eyebrow">Body metrics</p>
+        <h1>Log body metrics</h1>
+        <p class="muted">Track weight, body fat, muscle mass, and BMI.</p>
+    </div>
+</section>
+
+<section class="detail-card">
+    {% if error %}
+        <div class="form-error">{{ error }}</div>
+    {% endif %}
+
+    {% if success %}
+        <div class="form-success">{{ success }}</div>
+    {% endif %}
+
+    <form method="post" action="/body-metrics" class="stack">
+        <label>
+            Date
+            <input type="date" name="entry_date" value="{{ profile.entry_date }}" required>
+        </label>
+
+        <label>
+            Weight (kg)
+            <input type="number" step="0.1" name="weight_kg" value="{{ profile.weight_kg }}" required>
+        </label>
+
+        <label>
+            Body fat (%)
+            <input type="number" step="0.1" name="body_fat_pct" value="{{ profile.body_fat_pct }}">
+        </label>
+
+        <label>
+            Muscle mass (%)
+            <input type="number" step="0.1" name="muscle_mass_pct" value="{{ profile.muscle_mass_pct }}">
+        </label>
+
+        <div class="inline-edit-buttons">
+            <button type="submit" class="btn btn-primary">Save metrics</button>
+        </div>
+    </form>
+</section>
+{% endblock %}

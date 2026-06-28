@@ -1,26 +1,29 @@
 from fastapi import APIRouter, Request
-from starlette.responses import RedirectResponse
 
+from app.core.auth import get_current_user_name, login_redirect
 from app.core.templates import templates
 from app.services.dashboard_service import get_dashboard_stats
 
 router = APIRouter()
 
-
+#
+#   Dashboard Router - GET
+#
 @router.get("/dashboard")
 async def dashboard(request: Request):
-    user = request.session.get("user")
-    if not user:
-        return RedirectResponse(url="/login", status_code=303)
+    redirect = login_redirect(request)
+    if redirect:
+        return redirect
 
-    stats = get_dashboard_stats(user["user_name"])
+    user_name = get_current_user_name(request)
+    stats = get_dashboard_stats(user_name)
 
     return templates.TemplateResponse(
         request,
         "dashboard.html",
         {
             "request": request,
-            "user": user,
+            "user": request.session.get("user"),
             "stats": stats,
         },
     )

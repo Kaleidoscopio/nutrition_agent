@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block title %}Activity diary{% endblock %}
+
+{% block content %}
+<section class="page-head">
+    <div class="page-head-main">
+        <p class="eyebrow">Activity diary</p>
+
+        <div class="page-head-title-row">
+            <h1>{{ entry_date }}</h1>
+
+            <form method="get" action="/activity" class="date-switcher">
+                <input type="date" name="entry_date" value="{{ entry_date }}">
+                <button type="submit" class="btn">Open</button>
+            </form>
+        </div>
+
+        <p class="muted">Activity calories: {{ daily_expenditure.activity_kcal or 0 }} kcal</p>
+    </div>
+</section>
+
+<section class="detail-card">
+    <h3>Add activity</h3>
+
+    <form method="post" action="/activity/add" class="stack">
+        <input type="hidden" name="entry_date" value="{{ entry_date }}">
+
+        <label>Type
+            <select name="activity_type" required>
+                <option value="cardio" {% if last_activity_type == "cardio" %}selected{% endif %}>Cardio</option>
+                <option value="strength" {% if last_activity_type == "strength" %}selected{% endif %}>Strength</option>
+                <option value="walking" {% if last_activity_type == "walking" %}selected{% endif %}>Walking</option>
+                <option value="sports" {% if last_activity_type == "sports" %}selected{% endif %}>Sports</option>
+                <option value="mobility" {% if last_activity_type == "mobility" %}selected{% endif %}>Mobility</option>
+                <option value="other" {% if last_activity_type == "other" %}selected{% endif %}>Other</option>
+            </select>
+        </label>
+
+        <label>Activity
+            <input type="text" name="activity_label" required placeholder="e.g. treadmill walk">
+        </label>
+
+        <label>Duration (minutes)
+            <input type="number" name="duration_minutes" placeholder="e.g. 45">
+        </label>
+
+        <label>Value
+            <input type="text" name="activity_value" placeholder="e.g. 6500 steps, incline 8">
+        </label>
+
+        <label>Intensity
+            <select name="intensity">
+                <option value="">--</option>
+                <option value="low">Low</option>
+                <option value="moderate">Moderate</option>
+                <option value="high">High</option>
+            </select>
+        </label>
+
+        <label>Calories burned
+            <input type="number" name="calories_burned" placeholder="e.g. 280">
+        </label>
+
+        <label>Notes
+            <input type="text" name="notes" placeholder="Optional notes">
+        </label>
+
+        <button type="submit" class="btn btn-primary">Add activity</button>
+    </form>
+</section>
+
+<section class="detail-card">
+    <h3>Entries</h3>
+
+    {% if items %}
+        <div class="metrics-list">
+            {% for item in items %}
+                <div class="metric-row diary-item">
+                    <div class="diary-row">
+                        <div>
+                            <strong>{{ item.activity_label }}</strong>
+                            <div class="muted">
+                                {{ item.activity_type }}
+                                {% if item.duration_minutes %} · {{ item.duration_minutes }} min{% endif %}
+                                {% if item.intensity %} · {{ item.intensity }}{% endif %}
+                                {% if item.activity_value %} · {{ item.activity_value }}{% endif %}
+                            </div>
+                            {% if item.notes %}
+                                <div class="muted">{{ item.notes }}</div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <strong>{{ item.calories_burned or 0 }} kcal</strong>
+                        </div>
+                    </div>
+
+                    <div class="diary-actions">
+                        <details class="inline-edit">
+                            <summary>Edit</summary>
+
+                            <form method="post" action="/activity/update/{{ item.id }}" class="stack inline-edit-form">
+                                <label>Type
+                                    <select name="activity_type" required>
+                                        <option value="cardio" {% if item.activity_type == "cardio" %}selected{% endif %}>Cardio</option>
+                                        <option value="strength" {% if item.activity_type == "strength" %}selected{% endif %}>Strength</option>
+                                        <option value="walking" {% if item.activity_type == "walking" %}selected{% endif %}>Walking</option>
+                                        <option value="sports" {% if item.activity_type == "sports" %}selected{% endif %}>Sports</option>
+                                        <option value="mobility" {% if item.activity_type == "mobility" %}selected{% endif %}>Mobility</option>
+                                        <option value="other" {% if item.activity_type == "other" %}selected{% endif %}>Other</option>
+                                    </select>
+                                </label>
+
+                                <label>Activity
+                                    <input type="text" name="activity_label" value="{{ item.activity_label or '' }}" required>
+                                </label>
+
+                                <label>Duration (minutes)
+                                    <input type="number" name="duration_minutes" value="{{ item.duration_minutes or '' }}">
+                                </label>
+
+                                <label>Value
+                                    <input type="text" name="activity_value" value="{{ item.activity_value or '' }}">
+                                </label>
+
+                                <label>Intensity
+                                    <select name="intensity">
+                                        <option value="">--</option>
+                                        <option value="low" {% if item.intensity == "low" %}selected{% endif %}>Low</option>
+                                        <option value="moderate" {% if item.intensity == "moderate" %}selected{% endif %}>Moderate</option>
+                                        <option value="high" {% if item.intensity == "high" %}selected{% endif %}>High</option>
+                                    </select>
+                                </label>
+
+                                <label>Calories burned
+                                    <input type="number" name="calories_burned" value="{{ item.calories_burned or 0 }}">
+                                </label>
+
+                                <label>Notes
+                                    <input type="text" name="notes" value="{{ item.notes or '' }}">
+                                </label>
+
+                                <div class="inline-edit-buttons">
+                                    <button type="submit" class="btn btn-primary">Save</button>
+                                    <button type="button" class="btn" onclick="this.closest('details').open = false">Cancel</button>
+                                </div>
+                            </form>
+                        </details>
+
+                        <form method="post" action="/activity/delete/{{ item.id }}" class="delete-form">
+                            <button type="submit" class="btn">Delete</button>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="muted">No activities registered yet.</p>
+    {% endif %}
+</section>
+{% endblock %}

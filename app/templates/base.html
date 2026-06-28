@@ -15,9 +15,13 @@
                 {% if user %}
                     <a href="/dashboard" class="{% if request.url.path == '/dashboard' %}active{% endif %}">Dashboard</a>
                     <a href="/diary" class="{% if request.url.path == '/diary' %}active{% endif %}">Diary</a>
+                    <a href="/activity" class="{% if request.url.path == '/activity' %}active{% endif %}">Activity</a>
+                    <a href="/body-metrics" class="{% if request.url.path == '/body-metrics' %}active{% endif %}">Body Metrics</a>
+                    <a href="/settings" class="{% if request.url.path == '/settings' %}active{% endif %}">Settings</a>
                     <a href="/logout">Logout</a>
                 {% else %}
-                    <a href="/login">Login</a>
+                    <a href="/login" class="{% if request.url.path == '/login' %}active{% endif %}">Login</a>
+                    <a href="/register" class="{% if request.url.path == '/register' %}active{% endif %}">Register</a>
                 {% endif %}
             </nav>
         </div>
