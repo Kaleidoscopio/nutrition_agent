@@ -27,13 +27,16 @@ Description=Nutrition Web App
 After=network.target
 
 [Service]
-User=deployuser
+User=droque
 WorkingDirectory=/srv/www/nutrition-app
-ExecStart=/srv/www/myapp/venv/bin/uvicorn/.venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8001
+Environment="PATH=/srv/www/nutrition-app/venv/bin"
+ExecStart=/srv/www/nutrition-app/venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8001
 Restart=always
+RestartSec=5
 
 [Install]
 WantedBy=multi-user.target
+
 
 # Open Firewall in Linux
 sudo ufw allow 8001/tcp
