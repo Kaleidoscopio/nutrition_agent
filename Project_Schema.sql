@@ -112,5 +112,22 @@ CREATE TABLE "users" (
 	"height_cm"	REAL,
 	"start_weight_kg"	REAL,
 	"activity_level"	TEXT NOT NULL CHECK("activity_level" IN ('sedentary', 'light', 'moderate', 'very_active', 'extra_active')),
+	"must_change_password"	INTEGER NOT NULL DEFAULT 0,
 	PRIMARY KEY("id" AUTOINCREMENT)
 );
+
+CREATE TABLE "daily_water" (
+    "id" INTEGER,
+    "entry_date" TEXT NOT NULL,
+    "user_name" TEXT NOT NULL,
+    "target_ml" INTEGER NOT NULL DEFAULT 2000,
+    "consumed_ml" INTEGER NOT NULL DEFAULT 0,
+    "notes" TEXT,
+    CONSTRAINT "uq_daily_water" UNIQUE("entry_date", "user_name"),
+    PRIMARY KEY("id" AUTOINCREMENT)
+);
+
+--	Create user admin with password "admin"
+INSERT INTO "main"."users"
+	("user_name", "password_hash", "display_name", "activity_level", "must_change_password")
+	VALUES ('admin', '$2b$12$xPlz4jkJNo79sFRmnxxSQePuyDxEMaUKb5AYmSRQe8340QcxJxQjy', 'admin', 'light', 1);

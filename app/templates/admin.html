@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Admin{% endblock %}
+
+{% block content %}
+<section class="detail-card">
+    <div class="page-head">
+        <div class="page-head-main">
+            <p class="eyebrow">Admin</p>
+            <div class="page-head-title-row">
+                <h1>Food aliases</h1>
+            </div>
+        </div>
+    </div>
+
+    {% if error %}
+        <div class="form-error">{{ error }}</div>
+    {% endif %}
+
+    {% if success %}
+        <div class="form-success">{{ success }}</div>
+    {% endif %}
+
+    <form method="get" action="/admin" class="stack" style="margin-bottom: 1.5rem;">
+        <label>
+            Search aliases or foods
+            <input type="text" name="q" value="{{ query }}" placeholder="e.g. yoghurt, chicken breast">
+        </label>
+        <div class="inline-edit-buttons">
+            <button type="submit" class="btn btn-primary">Search</button>
+            <a href="/admin" class="btn btn-secondary">Clear</a>
+        </div>
+    </form>
+
+    <section class="detail-card" style="margin-bottom: 1.5rem;">
+        <h2>Add alias</h2>
+        <form method="post" action="/admin/food-alias/add" class="stack">
+            <label>
+                Alias
+                <input type="text" name="alias" required>
+            </label>
+
+            <label>
+                Food
+                <select name="food_id" required>
+                    {% for food in foods %}
+                        <option value="{{ food.id }}">
+                            {{ food.food_name }}{% if food.food_category %} — {{ food.food_category }}{% endif %}
+                        </option>
+                    {% endfor %}
+                </select>
+            </label>
+
+            <div class="inline-edit-buttons">
+                <button type="submit" class="btn btn-primary">Add alias</button>
+            </div>
+        </form>
+    </section>
+
+    <section class="detail-card">
+        <h2>Existing aliases</h2>
+
+        {% if aliases %}
+            <div class="stack">
+                {% for item in aliases %}
+                    <form method="post" action="/admin/food-alias/update/{{ item.id }}" class="stack" style="padding: 1rem; border: 1px solid rgba(0,0,0,0.08); border-radius: 0.75rem; margin-bottom: 1rem;">
+                        <label>
+                            Alias
+                            <input type="text" name="alias" value="{{ item.alias }}" required>
+                        </label>
+
+                        <label>
+                            Food
+                            <select name="food_id" required>
+                                {% for food in foods %}
+                                    <option value="{{ food.id }}" {% if food.id == item.food_id %}selected{% endif %}>
+                                        {{ food.food_name }}{% if food.food_category %} — {{ food.food_category }}{% endif %}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </label>
+
+                        <div class="inline-edit-buttons">
+                            <button type="submit" class="btn btn-primary">Save</button>
+                        </div>
+                    </form>
+
+                    <form method="post" action="/admin/food-alias/delete/{{ item.id }}" onsubmit="return confirm('Delete this alias?');" style="margin-top: -0.5rem; margin-bottom: 1.5rem;">
+                        <button type="submit" class="btn btn-secondary">Delete</button>
+                    </form>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>No aliases found.</p>
+        {% endif %}
+    </section>
+</section>
+{% endblock %}

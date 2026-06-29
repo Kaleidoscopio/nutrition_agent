@@ -71,8 +71,85 @@
 
         <div class="inline-edit-buttons">
             <button type="submit" class="btn btn-primary">Save changes</button>
+            <button type="button" class="btn btn-secondary" id="open-password-modal">Change password</button>
             <a href="/dashboard" class="btn btn-secondary">Cancel</a>
         </div>
     </form>
 </section>
+
+<dialog id="change-password-dialog" class="settings-dialog">
+    <form method="post" action="/settings/change-password" class="stack">
+        <div class="page-head">
+            <div class="page-head-main">
+                <p class="eyebrow">Security</p>
+                <div class="page-head-title-row">
+                    <h2>Change password</h2>
+                </div>
+            </div>
+        </div>
+    {% if password_error %}
+        <div class="form-password-error">{{ password_error }}</div>
+    {% endif %}
+        <p class="muted-copy">Use a new password with at least 8 characters.</p>
+
+        <label>
+            Current password
+            <input type="password" name="current_password" required autocomplete="current-password">
+        </label>
+
+        <label>
+            New password
+            <input type="password" name="new_password" required autocomplete="new-password">
+        </label>
+
+        <label>
+            Confirm new password
+            <input type="password" name="confirm_password" required autocomplete="new-password">
+        </label>
+
+        <div class="inline-edit-buttons">
+            <button type="submit" class="btn btn-primary">Update password</button>
+            <button type="button" class="btn btn-secondary" id="close-password-modal">Cancel</button>
+        </div>
+    </form>
+</dialog>
+
+<script>
+    const passwordDialog = document.getElementById('change-password-dialog');
+    const openPasswordModalButton = document.getElementById('open-password-modal');
+    const closePasswordModalButton = document.getElementById('close-password-modal');
+
+    if (openPasswordModalButton && passwordDialog) {
+        openPasswordModalButton.addEventListener('click', () => {
+            passwordDialog.showModal();
+        });
+    }
+
+    if (closePasswordModalButton && passwordDialog) {
+        closePasswordModalButton.addEventListener('click', () => {
+            passwordDialog.close();
+        });
+    }
+
+    if (passwordDialog) {
+        passwordDialog.addEventListener('click', (event) => {
+            const rect = passwordDialog.getBoundingClientRect();
+            const clickedOutside =
+                event.clientX < rect.left ||
+                event.clientX > rect.right ||
+                event.clientY < rect.top ||
+                event.clientY > rect.bottom;
+
+            if (clickedOutside) {
+                passwordDialog.close();
+            }
+        });
+    }
+
+    {% if password_modal_open %}
+    if (passwordDialog) {
+        passwordDialog.showModal();
+    }
+    {% endif %}
+</script>
 {% endblock %}

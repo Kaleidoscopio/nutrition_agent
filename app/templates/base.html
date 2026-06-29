@@ -26,14 +26,19 @@
         {% endif %}
 
         <nav class="top-nav" aria-label="Primary navigation">
-        {% if user %}
+        {% if user and user.user_name != "admin" %}
             <a href="/dashboard" class="{% if request.url.path == '/dashboard' %}active{% endif %}">Dashboard</a>
             <a href="/trends" class="{% if request.url.path == '/trends' %}active{% endif %}">Trends</a>
             <a href="/diary" class="{% if request.url.path == '/diary' %}active{% endif %}">Diary</a>
             <a href="/activity" class="{% if request.url.path == '/activity' %}active{% endif %}">Activity</a>
             <a href="/body-metrics" class="{% if request.url.path == '/body-metrics' %}active{% endif %}">Body Metrics</a>
+        {% endif %}
+        {% if user and user.user_name == "admin" %}
+            <a href="/admin" class="{% if request.url.path == '/admin' %}active{% endif %}">Admin</a>
+        {% endif %}
+        {% if user %}
             <a href="/settings" class="{% if request.url.path == '/settings' %}active{% endif %}" 
-                aria-label="Settings" title="Settings">⚙️</a>
+                aria-label="Settings" title="Settings">Settings</a>
             <a href="/logout">Logout</a>
         {% else %}
             <a href="/login" class="{% if request.url.path == '/login' %}active{% endif %}">Login</a>
@@ -45,13 +50,24 @@
     {% if user %}
         <div class="container">
         <nav id="mobile-nav" class="mobile-nav" aria-label="Mobile navigation">
+        {% if user and user.user_name != "admin" %}
             <a href="/dashboard" class="{% if request.url.path == '/dashboard' %}active{% endif %}">Dashboard</a>
             <a href="/trends" class="{% if request.url.path == '/trends' %}active{% endif %}">Trends</a>
             <a href="/diary" class="{% if request.url.path == '/diary' %}active{% endif %}">Diary</a>
             <a href="/activity" class="{% if request.url.path == '/activity' %}active{% endif %}">Activity</a>
             <a href="/body-metrics" class="{% if request.url.path == '/body-metrics' %}active{% endif %}">Body Metrics</a>
-            <a href="/settings" class="{% if request.url.path == '/settings' %}active{% endif %}">Settings</a>
+        {% endif %}
+        {% if user and user.user_name == "admin" %}
+            <a href="/admin" class="{% if request.url.path == '/admin' %}active{% endif %}">Admin</a>
+        {% endif %}
+        {% if user %}
+            <a href="/settings" class="{% if request.url.path == '/settings' %}active{% endif %}" 
+                aria-label="Settings" title="Settings">Settings</a>
             <a href="/logout">Logout</a>
+        {% else %}
+            <a href="/login" class="{% if request.url.path == '/login' %}active{% endif %}">Login</a>
+            <a href="/register" class="{% if request.url.path == '/register' %}active{% endif %}">Register</a>
+        {% endif %}
         </nav>
         </div>
 

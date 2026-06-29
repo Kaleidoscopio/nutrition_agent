@@ -3,7 +3,7 @@ from starlette.responses import RedirectResponse, Response
 
 from app.core.security import verify_password, hash_password
 from app.core.templates import templates
-from app.core.auth import get_current_user_name, login_redirect
+from app.core.auth import get_current_user_name, login_redirect, load_profile
 from app.db.database import get_db_connection
 
 router = APIRouter()
@@ -57,7 +57,7 @@ async def login(
     
     conn = get_db_connection()
     user = conn.execute("""
-        SELECT id, user_name, email, password_hash, display_name, is_active
+        SELECT id, user_name, email, password_hash, display_name, is_active, must_change_password
         FROM users
         WHERE user_name = ?
     """, (user_name,)).fetchone()
@@ -92,18 +92,19 @@ async def login(
         "user_name": user["user_name"],
         "email": user["email"],
         "name": user["display_name"] or user["user_name"],
+        "is_admin": user["user_name"] == "admin",
     }
 
-    redirect = RedirectResponse(url="/dashboard", status_code=303)
+    request.session["remember_me"] = bool(remember_me)
 
-    if remember_me:
-        request.session["remember_me"] = True
-    else:
-        request.session["remember_me"] = False
+    if user["must_change_password"]:
+        return RedirectResponse(url="/force-password-reset", status_code=303)
 
-    return redirect
+    return RedirectResponse(url="/dashboard", status_code=303)
 
-
+#
+#   Logout Endpoint
+#
 @router.get("/logout")
 async def logout(request: Request):
     request.session.clear()
@@ -279,25 +280,13 @@ async def settings_page(request: Request):
 
     user_name = get_current_user_name(request)
 
-    conn = get_db_connection()
-    profile = conn.execute(
-        """
-        SELECT user_name, email, display_name, sex, date_of_birth,
-               height_cm, start_weight_kg, activity_level
-        FROM users
-        WHERE user_name = ?
-        """,
-        (user_name,)
-    ).fetchone()
-    conn.close()
-
     return templates.TemplateResponse(
         request,
         "settings.html",
         {
             "request": request,
             "user": request.session.get("user"),
-            "profile": profile,
+            "profile": load_profile(user_name),
             "error": None,
             "success": None,
             "activity_levels": {
@@ -441,5 +430,193 @@ async def update_settings(
             "error": None,
             "success": "Profile updated successfully.",
             "activity_levels": activity_levels,
+        },
+    )
+
+#
+#   Force Password Reset Endpoint - GET
+#
+@router.get("/force-password-reset")
+async def force_password_reset_page(request: Request):
+    redirect = login_redirect(request)
+    if redirect:
+        return redirect
+
+    user = request.session.get("user")
+    return templates.TemplateResponse(
+        request,
+        "force_password_reset.html",
+        {
+            "request": request,
+            "user": user,
+            "error": None,
+            "success": None,
+        },
+    )
+
+#
+#   Force Password Reset Endpoint - POST
+#
+@router.post("/force-password-reset")
+async def force_password_reset(
+    request: Request,
+    current_password: str = Form(...),
+    new_password: str = Form(...),
+    confirm_password: str = Form(...),
+):
+    redirect = login_redirect(request)
+    if redirect:
+        return redirect
+
+    user_name = get_current_user_name(request)
+
+    if len(new_password) < 8:
+        error = "Password must have at least 8 characters."
+    elif new_password != confirm_password:
+        error = "Passwords do not match."
+    else:
+        error = None
+
+    if error:
+        return templates.TemplateResponse(
+            request,
+            "force_password_reset.html",
+            {
+                "request": request,
+                "user": request.session.get("user"),
+                "error": error,
+                "success": None,
+            },
+            status_code=400,
+        )
+
+    conn = get_db_connection()
+    user = conn.execute(
+        """
+        SELECT password_hash
+        FROM users
+        WHERE user_name = ?
+        """,
+        (user_name,),
+    ).fetchone()
+
+    if not user or not verify_password(current_password, user["password_hash"]):
+        conn.close()
+        return templates.TemplateResponse(
+            request,
+            "force_password_reset.html",
+            {
+                "request": request,
+                "user": request.session.get("user"),
+                "error": "Current password is incorrect.",
+                "success": None,
+            },
+            status_code=400,
+        )
+
+    new_hash = hash_password(new_password)
+
+    conn.execute(
+        """
+        UPDATE users
+        SET password_hash = ?, must_change_password = 0
+        WHERE user_name = ?
+        """,
+        (new_hash, user_name),
+    )
+    conn.commit()
+    conn.close()
+
+    return RedirectResponse(url="/dashboard", status_code=303)
+
+#
+#   Chaange Password Endpoint - POST
+#
+@router.post("/settings/change-password")
+async def change_password(
+    request: Request,
+    current_password: str = Form(...),
+    new_password: str = Form(...),
+    confirm_password: str = Form(...),
+):
+    redirect = login_redirect(request)
+    if redirect:
+        return redirect
+
+    user_name = get_current_user_name(request)
+
+    if len(new_password) < 8:
+        return templates.TemplateResponse(
+            request,
+            "settings.html",
+            {
+                "request": request,
+                "user": request.session.get("user"),
+                "profile": load_profile(user_name),
+                "password_error": "Password must have at least 8 characters.",
+                "success": None,
+                "activity_levels": ACTIVITY_LEVELS,
+                "password_modal_open": True,
+            },
+            status_code=400,
+        )
+
+    if new_password != confirm_password:
+        return templates.TemplateResponse(
+            request,
+            "settings.html",
+            {
+                "request": request,
+                "user": request.session.get("user"),
+                "profile": load_profile(user_name),
+                "password_error": "Passwords do not match.",
+                "success": None,
+                "activity_levels": ACTIVITY_LEVELS,
+                "password_modal_open": True,
+            },
+            status_code=400,
+        )
+
+    conn = get_db_connection()
+    user = conn.execute(
+        "SELECT password_hash FROM users WHERE user_name = ?",
+        (user_name,),
+    ).fetchone()
+
+    if not user or not verify_password(current_password, user["password_hash"]):
+        conn.close()
+        return templates.TemplateResponse(
+            request,
+            "settings.html",
+            {
+                "request": request,
+                "user": request.session.get("user"),
+                "profile": load_profile(user_name),
+                "password_error": "Current password is incorrect.",
+                "success": None,
+                "activity_levels": ACTIVITY_LEVELS,
+                "password_modal_open": True,
+            },
+            status_code=400,
+        )
+
+    conn.execute(
+        "UPDATE users SET password_hash = ?, must_change_password = 0 WHERE user_name = ?",
+        (hash_password(new_password), user_name),
+    )
+    conn.commit()
+    conn.close()
+
+    return templates.TemplateResponse(
+        request,
+        "settings.html",
+        {
+            "request": request,
+            "user": request.session.get("user"),
+            "profile": load_profile(user_name),
+            "password_error": None,
+            "success": "Password updated successfully.",
+            "activity_levels": ACTIVITY_LEVELS,
+            "password_modal_open": False,
         },
     )
