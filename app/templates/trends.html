@@ -1,0 +1,404 @@
+{% extends "base.html" %}
+
+{% block title %}Trends{% endblock %}
+
+{% block content %}
+<section class="page-head">
+    <div class="page-head-main">
+        <p class="eyebrow">Progress dashboard</p>
+
+        <div class="page-head-title-row">
+            <div>
+                <h1>Trends</h1>
+                <p class="muted">Energy balance, body composition trends, and weight projections.</p>
+            </div>
+
+            <form method="get" action="/trends" class="date-switcher">
+                <select name="period" aria-label="Select period">
+                    <option value="7d" {% if selected_period == "7d" %}selected{% endif %}>7 days</option>
+                    <option value="30d" {% if selected_period == "30d" %}selected{% endif %}>30 days</option>
+                    <option value="90d" {% if selected_period == "90d" %}selected{% endif %}>90 days</option>
+                    <option value="180d" {% if selected_period == "180d" %}selected{% endif %}>6 months</option>
+                    <option value="365d" {% if selected_period == "365d" %}selected{% endif %}>1 year</option>
+                </select>
+                <button class="btn btn-secondary" type="submit">Update</button>
+            </form>
+        </div>
+    </div>
+</section>
+
+<section class="card-grid">
+    <article class="stat-card">
+        <p class="stat-label">Average calories consumed</p>
+        <h2>{{ avg_calories_in }}</h2>
+        <p class="stat-meta">avg kcal/day</p>
+    </article>
+
+    <article class="stat-card">
+        <p class="stat-label">Average TDEE</p>
+        <h2>{{ avg_tdee_kcal }}</h2>
+        <p class="stat-meta">avg kcal/day</p>
+    </article>
+
+    <article class="stat-card">
+        <p class="stat-label">Average net balance</p>
+        <h2>
+            {% if avg_net_balance_kcal > 0 %}+{{ avg_net_balance_kcal }}{% else %}{{ avg_net_balance_kcal }}{% endif %}
+        </h2>
+        <p class="stat-meta">negative = deficit</p>
+    </article>
+
+    <article class="stat-card">
+        <p class="stat-label">30-day projection</p>
+        <h2>{{ projection_30d }}</h2>
+        <p class="stat-meta">based on weight trend</p>
+    </article>
+</section>
+
+<section class="card-grid">
+    <article class="stat-card">
+        <p class="stat-label">Latest weight</p>
+        <h2>{{ latest_weight }}</h2>
+        <p class="stat-meta">most recent entry</p>
+    </article>
+
+    <article class="stat-card">
+        <p class="stat-label">Weight change</p>
+        <h2>{{ weight_delta }}</h2>
+        <p class="stat-meta">selected period</p>
+    </article>
+
+    <article class="stat-card">
+        <p class="stat-label">Latest body fat</p>
+        <h2>{{ latest_body_fat or "—" }}</h2>
+        <p class="stat-meta">most recent entry</p>
+    </article>
+
+    <article class="stat-card">
+        <p class="stat-label">Latest muscle mass</p>
+        <h2>{{ latest_muscle_mass or "—" }}</h2>
+        <p class="stat-meta">most recent entry</p>
+    </article>
+</section>
+
+<section class="detail-card chart-card">
+    <div class="section-head">
+        <div>
+            <h3>Weight trend and projections</h3>
+            <p class="muted">Historical weight with simple forward projections for the next 30, 90, 180, and 365 days.</p>
+        </div>
+    </div>
+
+    <div class="chart-shell">
+        <canvas id="weight-chart" aria-label="Weight trend and projection chart"></canvas>
+    </div>
+
+    <div class="forecast-grid">
+        <div class="forecast-chip">
+            <span class="forecast-label">30 days</span>
+            <strong>{{ projection_30d }}</strong>
+        </div>
+        <div class="forecast-chip">
+            <span class="forecast-label">90 days</span>
+            <strong>{{ projection_90d }}</strong>
+        </div>
+        <div class="forecast-chip">
+            <span class="forecast-label">6 months</span>
+            <strong>{{ projection_180d }}</strong>
+        </div>
+        <div class="forecast-chip">
+            <span class="forecast-label">1 year</span>
+            <strong>{{ projection_365d }}</strong>
+        </div>
+    </div>
+</section>
+
+<section class="detail-card chart-card">
+    <div class="section-head">
+        <div>
+            <h3>Energy trends</h3>
+            <p class="muted">Daily intake, logged activity calories, and estimated maintenance calories.</p>
+        </div>
+    </div>
+
+    <div class="chart-shell">
+        <canvas id="calories-chart" aria-label="Energy trends chart"></canvas>
+    </div>
+</section>
+
+<section class="detail-card chart-card">
+    <div class="section-head">
+        <div>
+            <h3>Net calorie balance</h3>
+            <p class="muted">Daily deficit or surplus based on your expenditure records.</p>
+        </div>
+    </div>
+
+    <div class="chart-shell">
+        <canvas id="balance-chart" aria-label="Net calorie balance chart"></canvas>
+    </div>
+</section>
+
+<section class="detail-card chart-card">
+    <div class="section-head">
+        <div>
+            <h3>Body composition trends</h3>
+            <p class="muted">Body fat and muscle mass across the selected period.</p>
+        </div>
+    </div>
+
+    <div class="chart-shell">
+        <canvas id="metrics-chart" aria-label="Body composition chart"></canvas>
+    </div>
+</section>
+
+<section class="detail-card">
+    <div class="section-head">
+        <div>
+            <h3>Raw daily history</h3>
+            <p class="muted">Detailed records for the selected period.</p>
+        </div>
+    </div>
+
+    <details class="trends-history">
+        <summary>Show history table</summary>
+
+        <div class="table-scroll">
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Calories in</th>
+                        <th>Calories out</th>
+                        <th>BMR</th>
+                        <th>Activity</th>
+                        <th>TDEE</th>
+                        <th>Net balance</th>
+                        <th>Weight</th>
+                        <th>Body fat</th>
+                        <th>Muscle mass</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in history_rows %}
+                    <tr>
+                        <td>{{ row.day }}</td>
+                        <td>{{ row.calories_in }}</td>
+                        <td>{{ row.calories_out }}</td>
+                        <td>{{ row.bmr_kcal }}</td>
+                        <td>{{ row.activity_kcal }}</td>
+                        <td>{{ row.tdee_kcal }}</td>
+                        <td>{{ row.net_balance_kcal }}</td>
+                        <td>{% if row.weight_kg is not none %}{{ row.weight_kg }} kg{% else %}—{% endif %}</td>
+                        <td>{% if row.body_fat_pct is not none %}{{ row.body_fat_pct }}%{% else %}—{% endif %}</td>
+                        <td>{% if row.muscle_mass_pct is not none %}{{ row.muscle_mass_pct }}%{% else %}—{% endif %}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </details>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const trendData = {{ chart_data | tojson }};
+
+    function buildWeightProjection(labels, weights) {
+        const validPoints = weights
+            .map((value, index) => value !== null ? { index, value } : null)
+            .filter(Boolean);
+
+        if (validPoints.length < 2) {
+            return {
+                labels: labels,
+                actual: weights,
+                projected: weights.map(() => null)
+            };
+        }
+
+        const first = validPoints[0];
+        const last = validPoints[validPoints.length - 1];
+        const slopePerPoint = (last.value - first.value) / Math.max(validPoints.length - 1, 1);
+
+        const futureOffsets = [30, 90, 180, 365];
+        const extendedLabels = [...labels];
+        const actualSeries = [...weights];
+        const projectedSeries = weights.map(() => null);
+
+        futureOffsets.forEach((offsetDays) => {
+            const futureDate = new Date(labels[last.index] || labels[labels.length - 1]);
+            futureDate.setDate(futureDate.getDate() + offsetDays);
+            extendedLabels.push(futureDate.toISOString().slice(0, 10));
+            actualSeries.push(null);
+            projectedSeries.push(Number((last.value + slopePerPoint * offsetDays).toFixed(1)));
+        });
+
+        projectedSeries[last.index] = last.value;
+
+        return {
+            labels: extendedLabels,
+            actual: actualSeries,
+            projected: projectedSeries
+        };
+    }
+
+    const weightProjection = buildWeightProjection(trendData.labels, trendData.weights);
+
+    const lineOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+            mode: 'index',
+            intersect: false
+        },
+        plugins: {
+            legend: {
+                labels: {
+                    boxWidth: 12,
+                    usePointStyle: true
+                }
+            }
+        },
+        scales: {
+            x: {
+                ticks: {
+                    maxTicksLimit: 6
+                },
+                grid: {
+                    display: false
+                }
+            },
+            y: {
+                grid: {
+                    color: 'rgba(31, 31, 26, 0.08)'
+                }
+            }
+        }
+    };
+
+    new Chart(document.getElementById('weight-chart'), {
+        type: 'line',
+        data: {
+            labels: weightProjection.labels,
+            datasets: [
+                {
+                    label: 'Weight',
+                    data: weightProjection.actual,
+                    borderColor: '#0f766e',
+                    backgroundColor: 'rgba(15, 118, 110, 0.12)',
+                    tension: 0.3,
+                    spanGaps: false
+                },
+                {
+                    label: 'Projection',
+                    data: weightProjection.projected,
+                    borderColor: '#6d6a63',
+                    borderDash: [6, 6],
+                    tension: 0.3,
+                    pointRadius: 0,
+                    spanGaps: true
+                }
+            ]
+        },
+        options: lineOptions
+    });
+
+    new Chart(document.getElementById('calories-chart'), {
+        type: 'line',
+        data: {
+            labels: trendData.labels,
+            datasets: [
+                {
+                    label: 'Calories in',
+                    data: trendData.calories_in,
+                    borderColor: '#0f766e',
+                    backgroundColor: 'rgba(15, 118, 110, 0.10)',
+                    tension: 0.25
+                },
+                {
+                    label: 'Logged burn',
+                    data: trendData.calories_out,
+                    borderColor: '#b45309',
+                    backgroundColor: 'rgba(180, 83, 9, 0.10)',
+                    tension: 0.25
+                },
+                {
+                    label: 'TDEE',
+                    data: trendData.tdee_kcal,
+                    borderColor: '#1f1f1a',
+                    backgroundColor: 'rgba(31, 31, 26, 0.08)',
+                    tension: 0.25
+                }
+            ]
+        },
+        options: lineOptions
+    });
+
+    new Chart(document.getElementById('balance-chart'), {
+        type: 'bar',
+        data: {
+            labels: trendData.labels,
+            datasets: [
+                {
+                    label: 'Net balance',
+                    data: trendData.net_balance_kcal,
+                    backgroundColor: trendData.net_balance_kcal.map(value =>
+                        value <= 0 ? 'rgba(15, 118, 110, 0.75)' : 'rgba(180, 83, 9, 0.70)'
+                    ),
+                    borderRadius: 6
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                x: {
+                    ticks: {
+                        maxTicksLimit: 6
+                    },
+                    grid: {
+                        display: false
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(31, 31, 26, 0.08)'
+                    }
+                }
+            }
+        }
+    });
+
+    new Chart(document.getElementById('metrics-chart'), {
+        type: 'line',
+        data: {
+            labels: trendData.labels,
+            datasets: [
+                {
+                    label: 'Body fat %',
+                    data: trendData.body_fat_pct,
+                    borderColor: '#9a3412',
+                    tension: 0.25,
+                    spanGaps: false
+                },
+                {
+                    label: 'Muscle mass %',
+                    data: trendData.muscle_mass_pct,
+                    borderColor: '#2563eb',
+                    tension: 0.25,
+                    spanGaps: false
+                }
+            ]
+        },
+        options: lineOptions
+    });
+</script>
+{% endblock %}

@@ -28,6 +28,7 @@
         <nav class="top-nav" aria-label="Primary navigation">
         {% if user %}
             <a href="/dashboard" class="{% if request.url.path == '/dashboard' %}active{% endif %}">Dashboard</a>
+            <a href="/trends" class="{% if request.url.path == '/trends' %}active{% endif %}">Trends</a>
             <a href="/diary" class="{% if request.url.path == '/diary' %}active{% endif %}">Diary</a>
             <a href="/activity" class="{% if request.url.path == '/activity' %}active{% endif %}">Activity</a>
             <a href="/body-metrics" class="{% if request.url.path == '/body-metrics' %}active{% endif %}">Body Metrics</a>
@@ -45,6 +46,7 @@
         <div class="container">
         <nav id="mobile-nav" class="mobile-nav" aria-label="Mobile navigation">
             <a href="/dashboard" class="{% if request.url.path == '/dashboard' %}active{% endif %}">Dashboard</a>
+            <a href="/trends" class="{% if request.url.path == '/trends' %}active{% endif %}">Trends</a>
             <a href="/diary" class="{% if request.url.path == '/diary' %}active{% endif %}">Diary</a>
             <a href="/activity" class="{% if request.url.path == '/activity' %}active{% endif %}">Activity</a>
             <a href="/body-metrics" class="{% if request.url.path == '/body-metrics' %}active{% endif %}">Body Metrics</a>
