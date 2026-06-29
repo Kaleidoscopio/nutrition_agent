@@ -8,23 +8,68 @@
 </head>
 <body>
     <header class="app-header">
-        <div class="container header-row">
-            <a href="/" class="brand">Food Diary</a>
+    <div class="container header-row">
+        <a href="/" class="brand">Food Diary</a>
 
-            <nav class="top-nav">
-                {% if user %}
-                    <a href="/dashboard" class="{% if request.url.path == '/dashboard' %}active{% endif %}">Dashboard</a>
-                    <a href="/diary" class="{% if request.url.path == '/diary' %}active{% endif %}">Diary</a>
-                    <a href="/activity" class="{% if request.url.path == '/activity' %}active{% endif %}">Activity</a>
-                    <a href="/body-metrics" class="{% if request.url.path == '/body-metrics' %}active{% endif %}">Body Metrics</a>
-                    <a href="/settings" class="{% if request.url.path == '/settings' %}active{% endif %}">Settings</a>
-                    <a href="/logout">Logout</a>
-                {% else %}
-                    <a href="/login" class="{% if request.url.path == '/login' %}active{% endif %}">Login</a>
-                    <a href="/register" class="{% if request.url.path == '/register' %}active{% endif %}">Register</a>
-                {% endif %}
-            </nav>
+        {% if user %}
+        <button
+            class="menu-toggle"
+            type="button"
+            aria-expanded="false"
+            aria-controls="mobile-nav"
+            aria-label="Open menu"
+        >
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        {% endif %}
+
+        <nav class="top-nav" aria-label="Primary navigation">
+        {% if user %}
+            <a href="/dashboard" class="{% if request.url.path == '/dashboard' %}active{% endif %}">Dashboard</a>
+            <a href="/trends" class="{% if request.url.path == '/trends' %}active{% endif %}">Trends</a>
+            <a href="/diary" class="{% if request.url.path == '/diary' %}active{% endif %}">Diary</a>
+            <a href="/activity" class="{% if request.url.path == '/activity' %}active{% endif %}">Activity</a>
+            <a href="/body-metrics" class="{% if request.url.path == '/body-metrics' %}active{% endif %}">Body Metrics</a>
+            <a href="/settings" class="{% if request.url.path == '/settings' %}active{% endif %}" 
+                aria-label="Settings" title="Settings">⚙️</a>
+            <a href="/logout">Logout</a>
+        {% else %}
+            <a href="/login" class="{% if request.url.path == '/login' %}active{% endif %}">Login</a>
+            <a href="/register" class="{% if request.url.path == '/register' %}active{% endif %}">Register</a>
+        {% endif %}
+        </nav>
+    </div>
+
+    {% if user %}
+        <div class="container">
+        <nav id="mobile-nav" class="mobile-nav" aria-label="Mobile navigation">
+            <a href="/dashboard" class="{% if request.url.path == '/dashboard' %}active{% endif %}">Dashboard</a>
+            <a href="/trends" class="{% if request.url.path == '/trends' %}active{% endif %}">Trends</a>
+            <a href="/diary" class="{% if request.url.path == '/diary' %}active{% endif %}">Diary</a>
+            <a href="/activity" class="{% if request.url.path == '/activity' %}active{% endif %}">Activity</a>
+            <a href="/body-metrics" class="{% if request.url.path == '/body-metrics' %}active{% endif %}">Body Metrics</a>
+            <a href="/settings" class="{% if request.url.path == '/settings' %}active{% endif %}">Settings</a>
+            <a href="/logout">Logout</a>
+        </nav>
         </div>
+
+        <script>
+        (() => {
+            const toggle = document.querySelector('.menu-toggle');
+            const mobileNav = document.querySelector('#mobile-nav');
+            if (!toggle || !mobileNav) return;
+
+            toggle.addEventListener('click', () => {
+            const open = toggle.getAttribute('aria-expanded') === 'true';
+            toggle.setAttribute('aria-expanded', String(!open));
+            mobileNav.classList.toggle('open', !open);
+            toggle.setAttribute('aria-label', open ? 'Open menu' : 'Close menu');
+            });
+        })();
+        </script>
+    {% endif %}
     </header>
 
     <main class="container app-main">

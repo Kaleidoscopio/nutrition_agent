@@ -9,7 +9,7 @@ from datetime import date
 from app.core.templates import templates
 from app.core.config import settings
 from app.core.auth import get_current_user_name, login_redirect
-from app.routers import auth, dashboard, bodymetrics, food_diary
+from app.routers import auth, dashboard, bodymetrics, food_diary, trends
 from app.db.database import get_db_connection
 
 #   Constants
@@ -34,6 +34,7 @@ app.include_router(auth.router)
 app.include_router(dashboard.router)
 app.include_router(bodymetrics.router)
 app.include_router(food_diary.router)
+app.include_router(trends.router)
 
 ####################################################################################################
 #

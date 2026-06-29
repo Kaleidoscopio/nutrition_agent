@@ -1,22 +1,27 @@
-# nutrition_agent
+# Nutrition Helper
 Support files for an AI Agent in charge of Nutrition and wellfare
 
-Uses:
+# Uses:
 
 HTMX        - https://htmx.org/
-??? PicoCSS     - https://picocss.com/
 
-##
 
-Requires:
+# Requires:
 
 fastapi             - https://fastapi.tiangolo.com/
+
 uvicorn[standard]
+
 jinja2
+
 python-dotenv
+
 bcrypt
+
 python-multipart
+
 itsdangerous
+
 
 O que eu faria como v1
 
