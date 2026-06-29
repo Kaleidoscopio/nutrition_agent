@@ -304,33 +304,49 @@
         options: lineOptions
     });
 
+    const caloriesDatasets = [
+        {
+            label: 'Calories in',
+            data: trendData.calories_in,
+            borderColor: '#0f766e',
+            backgroundColor: 'rgba(15, 118, 110, 0.10)',
+            tension: 0.25
+        },
+        {
+            label: 'Logged burn',
+            data: trendData.calories_out,
+            borderColor: '#b45309',
+            backgroundColor: 'rgba(180, 83, 9, 0.10)',
+            tension: 0.25
+        },
+        {
+            label: 'TDEE',
+            data: trendData.tdee_kcal,
+            borderColor: '#1f1f1a',
+            backgroundColor: 'rgba(31, 31, 26, 0.08)',
+            tension: 0.25
+        }
+    ];
+
+    if (trendData.maintenance_kcal && trendData.maintenance_kcal.length > 0) {
+        caloriesDatasets.push({
+            label: 'Estimated maintenance',
+            data: trendData.maintenance_kcal,
+            borderColor: '#7c3aed',
+            backgroundColor: 'transparent',
+            borderDash: [6, 6],
+            borderWidth: 2,
+            pointRadius: 0,
+            pointHoverRadius: 0,
+            tension: 0
+        });
+    }
+
     new Chart(document.getElementById('calories-chart'), {
         type: 'line',
         data: {
             labels: trendData.labels,
-            datasets: [
-                {
-                    label: 'Calories in',
-                    data: trendData.calories_in,
-                    borderColor: '#0f766e',
-                    backgroundColor: 'rgba(15, 118, 110, 0.10)',
-                    tension: 0.25
-                },
-                {
-                    label: 'Logged burn',
-                    data: trendData.calories_out,
-                    borderColor: '#b45309',
-                    backgroundColor: 'rgba(180, 83, 9, 0.10)',
-                    tension: 0.25
-                },
-                {
-                    label: 'TDEE',
-                    data: trendData.tdee_kcal,
-                    borderColor: '#1f1f1a',
-                    backgroundColor: 'rgba(31, 31, 26, 0.08)',
-                    tension: 0.25
-                }
-            ]
+            datasets: caloriesDatasets
         },
         options: lineOptions
     });

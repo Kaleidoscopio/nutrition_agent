@@ -1,7 +1,8 @@
 from datetime import date, timedelta
 from statistics import mean
+from app.db.database import get_db_connection
+from app.services.metabolism_service import build_energy_summary
 
-#   Constants
 PERIOD_TO_DAYS = {
     "7d": 7,
     "30d": 30,
@@ -10,9 +11,19 @@ PERIOD_TO_DAYS = {
     "365d": 365,
 }
 
+#
+#   Return the most recent non zero value
+#
+def latest_non_zero(values):
+    for value in reversed(values):
+        if value not in (None, 0):
+            return value
+    return 0
+
 def parse_period(period: str | None) -> str:
     period = (period or "30d").strip().lower()
     return period if period in PERIOD_TO_DAYS else "30d"
+
 
 def build_projection(latest_weight_kg: float | None, daily_weight_delta: float, days: int) -> str:
     if latest_weight_kg is None:
@@ -20,11 +31,38 @@ def build_projection(latest_weight_kg: float | None, daily_weight_delta: float, 
     projected = latest_weight_kg + (daily_weight_delta * days)
     return f"{projected:.1f} kg"
 
+#
+#   Gets the lower and upper limit of the selection (ignoring the current day)
+#
 def get_period_bounds(period: str):
     days = PERIOD_TO_DAYS[period]
-    end_date = date.today()
+    end_date = date.today() - timedelta(days=1)
     start_date = end_date - timedelta(days=days - 1)
     return start_date.isoformat(), end_date.isoformat()
+
+#
+#   Gets the average of a series of values ignoring value at 0 or None
+#
+def average_ignore_zero(values):
+    filtered = [value for value in values if value not in (None, 0)]
+    return round(mean(filtered)) if filtered else 0
+
+#
+#   Returns a list of values, replacing empty entries with the last recorded value
+#
+def forward_fill(values):
+    filled = []
+    last_value = None
+
+    for value in values:
+        if value is not None:
+            last_value = value
+            filled.append(value)
+        else:
+            filled.append(last_value)
+
+    return filled
+
 
 def build_trends_payload(conn, user_name: str, period: str):
     start_date, end_date = get_period_bounds(period)
@@ -38,12 +76,14 @@ def build_trends_payload(conn, user_name: str, period: str):
     tdee_kcal = [row["tdee_kcal"] for row in history_rows]
     net_balance_kcal = [row["net_balance_kcal"] for row in history_rows]
 
-    weights = [row["weight_kg"] for row in history_rows]
+    raw_weights = [row["weight_kg"] for row in history_rows]
+    weights = forward_fill(raw_weights)
+
     body_fat_pct = [row["body_fat_pct"] for row in history_rows]
     muscle_mass_pct = [row["muscle_mass_pct"] for row in history_rows]
     bmi_values = [row["bmi"] for row in history_rows]
 
-    weight_points = [value for value in weights if value is not None]
+    weight_points = [value for value in raw_weights if value is not None]
     latest_weight_kg = weight_points[-1] if weight_points else None
 
     if len(weight_points) >= 2:
@@ -65,16 +105,40 @@ def build_trends_payload(conn, user_name: str, period: str):
             latest_metrics_row = row
             break
 
-    avg_calories_in = round(mean(calories_in)) if calories_in else 0
-    avg_calories_out = round(mean(calories_out)) if calories_out else 0
-    avg_bmr_kcal = round(mean(bmr_kcal)) if bmr_kcal else 0
-    avg_activity_kcal = round(mean(activity_kcal)) if activity_kcal else 0
-    avg_tdee_kcal = round(mean(tdee_kcal)) if tdee_kcal else 0
-    avg_net_balance_kcal = round(mean(net_balance_kcal)) if net_balance_kcal else 0
+    avg_calories_in = average_ignore_zero(calories_in)
+    avg_calories_out = average_ignore_zero(calories_out)
+    avg_bmr_kcal = average_ignore_zero(bmr_kcal)
+    avg_activity_kcal = average_ignore_zero(activity_kcal)
+    avg_tdee_kcal = average_ignore_zero(tdee_kcal)
+    avg_net_balance_kcal = average_ignore_zero(net_balance_kcal)
 
-    latest_net_balance = net_balance_kcal[-1] if net_balance_kcal else 0
-    latest_tdee = tdee_kcal[-1] if tdee_kcal else 0
+    latest_net_balance = latest_non_zero(net_balance_kcal)
+    latest_tdee = latest_non_zero(tdee_kcal)
 
+    today_sql = """
+        SELECT COALESCE(SUM(daily_kcal), 0) AS kcal_today
+        FROM daily_meal
+        WHERE user_name = ?
+          AND entry_date = date('now')
+    """
+
+    profile_sql = """
+        SELECT sex, date_of_birth, height_cm, start_weight_kg, activity_level, display_name, email
+        FROM users
+        WHERE user_name = ?
+        LIMIT 1
+    """
+	
+    #   Get Estimated Maintenance Value
+    today = conn.execute(today_sql, (user_name,)).fetchone()
+    profile = conn.execute(profile_sql, (user_name,)).fetchone()
+
+    profile_data = dict(profile) if profile else {}
+    if latest_weight_kg is not None:
+        profile_data["weight_kg"] = latest_weight_kg
+
+    estimated_maintenance_kcal = build_energy_summary(profile_data, today["kcal_today"]).get("tdee", 0)
+	
     return {
         "selected_period": period,
         "history_rows": history_rows,
@@ -124,8 +188,10 @@ def build_trends_payload(conn, user_name: str, period: str):
             "body_fat_pct": body_fat_pct,
             "muscle_mass_pct": muscle_mass_pct,
             "bmi": bmi_values,
+            "maintenance_kcal": [estimated_maintenance_kcal] * len(labels) if estimated_maintenance_kcal else [],
         },
     }
+
 
 def load_trends_history(conn, user_name: str, start_date: str, end_date: str):
     rows = conn.execute(
