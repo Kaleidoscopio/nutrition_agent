@@ -1,12 +1,12 @@
-# nutrition_agent
+# Nutrition Helper
 Support files for an AI Agent in charge of Nutrition and wellfare
 
-#Uses:
+# Uses:
 
 HTMX        - https://htmx.org/
 
 
-#Requires:
+# Requires:
 
 fastapi             - https://fastapi.tiangolo.com/
 
