@@ -9,6 +9,10 @@ from app.db.database import get_db_connection
 from app.services.food_diary_service import get_or_create_daily_meal, calculate_nutrition, get_food_by_id
 from app.services.food_diary_service import recalculate_daily_meal_total, render_diary_page, search_food_matches
 
+# TODO
+#   In case of no matches found, meal type is lost
+#   Should keep value
+
 #   Constants
 MEAL_TYPES = {"breakfast", "lunch", "dinner", "snacks"}
 

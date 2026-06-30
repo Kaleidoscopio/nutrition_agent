@@ -24,41 +24,46 @@ def load_food_options(conn, search: str | None = None):
         query += " AND (food_name LIKE ? OR search_text LIKE ?)"
         params.extend([f"%{search}%", f"%{search}%"])
 
-    query += " ORDER BY food_name ASC LIMIT 100"
+    query += " ORDER BY food_name ASC LIMIT 50"
     return conn.execute(query, params).fetchall()
 
 @router.get("/admin", response_class=HTMLResponse)
-async def admin_page(request: Request, q: str | None = None):
+async def admin_page(request: Request, query_filter: str | None = None):
     redirect = login_redirect(request)
     if redirect:
         return redirect
 
     user = require_admin(request)
 
-    conn = get_db_connection()
-
-    alias_query = """
-        SELECT
-            fa.id,
-            fa.alias,
-            fa.food_id,
-            fm.food_name,
-            fm.food_category
-        FROM food_alias fa
-        JOIN food_master fm ON fm.id = fa.food_id
-        WHERE 1 = 1
-    """
     params = []
 
-    if q:
+    #   Return results only if there is a filter set
+    if query_filter:
+        conn = get_db_connection()
+
+        alias_query = """
+            SELECT
+                fa.id,
+                fa.alias,
+                fa.food_id,
+                fm.food_name,
+                fm.food_category
+            FROM food_alias fa
+            JOIN food_master fm ON fm.id = fa.food_id
+            WHERE 1 = 1
+        """
+
         alias_query += " AND (fa.alias LIKE ? OR fm.food_name LIKE ?)"
-        params.extend([f"%{q}%", f"%{q}%"])
+        params.extend([f"%{query_filter}%", f"%{query_filter}%"])
 
-    alias_query += " ORDER BY fa.alias ASC"
+        alias_query += " ORDER BY fa.alias ASC"
 
-    aliases = conn.execute(alias_query, params).fetchall()
-    foods = load_food_options(conn)
-    conn.close()
+        aliases = conn.execute(alias_query, params).fetchall()
+        foods = load_food_options(conn)
+        conn.close()
+    else:
+        aliases = []
+        foods = []
 
     return templates.TemplateResponse(
         request,
@@ -68,7 +73,7 @@ async def admin_page(request: Request, q: str | None = None):
             "user": user,
             "aliases": aliases,
             "foods": foods,
-            "query": q or "",
+            "query": query_filter or "",
             "error": None,
             "success": None,
         },
