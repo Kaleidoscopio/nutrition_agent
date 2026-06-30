@@ -6,3 +6,5 @@ run_food_import.sh
 skills
 TODO
 render_deploy.txt
+DEPLOY
+migration.py

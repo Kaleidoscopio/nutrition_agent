@@ -1,6 +1,5 @@
 from datetime import date, timedelta
 from statistics import mean
-from app.db.database import get_db_connection
 from app.services.metabolism_service import build_energy_summary
 
 PERIOD_TO_DAYS = {
@@ -11,14 +10,13 @@ PERIOD_TO_DAYS = {
     "365d": 365,
 }
 
-#
-#   Return the most recent non zero value
-#
+
 def latest_non_zero(values):
     for value in reversed(values):
         if value not in (None, 0):
             return value
     return 0
+
 
 def parse_period(period: str | None) -> str:
     period = (period or "30d").strip().lower()
@@ -31,25 +29,19 @@ def build_projection(latest_weight_kg: float | None, daily_weight_delta: float, 
     projected = latest_weight_kg + (daily_weight_delta * days)
     return f"{projected:.1f} kg"
 
-#
-#   Gets the lower and upper limit of the selection (ignoring the current day)
-#
+
 def get_period_bounds(period: str):
     days = PERIOD_TO_DAYS[period]
     end_date = date.today() - timedelta(days=1)
     start_date = end_date - timedelta(days=days - 1)
     return start_date.isoformat(), end_date.isoformat()
 
-#
-#   Gets the average of a series of values ignoring value at 0 or None
-#
+
 def average_ignore_zero(values):
     filtered = [value for value in values if value not in (None, 0)]
     return round(mean(filtered)) if filtered else 0
 
-#
-#   Returns a list of values, replacing empty entries with the last recorded value
-#
+
 def forward_fill(values):
     filled = []
     last_value = None
@@ -75,6 +67,9 @@ def build_trends_payload(conn, user_name: str, period: str):
     activity_kcal = [row["activity_kcal"] for row in history_rows]
     tdee_kcal = [row["tdee_kcal"] for row in history_rows]
     net_balance_kcal = [row["net_balance_kcal"] for row in history_rows]
+
+    water_consumed_ml = [row["water_consumed_ml"] for row in history_rows]
+    water_target_ml = [row["water_target_ml"] for row in history_rows]
 
     raw_weights = [row["weight_kg"] for row in history_rows]
     weights = forward_fill(raw_weights)
@@ -112,24 +107,38 @@ def build_trends_payload(conn, user_name: str, period: str):
     avg_tdee_kcal = average_ignore_zero(tdee_kcal)
     avg_net_balance_kcal = average_ignore_zero(net_balance_kcal)
 
+    avg_water_ml = average_ignore_zero(water_consumed_ml)
+    avg_water_target_ml = average_ignore_zero(water_target_ml)
+
+    days_with_target = [
+        row for row in history_rows
+        if (row["water_target_ml"] or 0) > 0
+    ]
+    days_target_met = [
+        row for row in history_rows
+        if (row["water_target_ml"] or 0) > 0
+        and (row["water_consumed_ml"] or 0) >= row["water_target_ml"]
+    ]
+    water_target_hit_rate = round((len(days_target_met) / len(days_with_target)) * 100) if days_with_target else 0
+
     latest_net_balance = latest_non_zero(net_balance_kcal)
     latest_tdee = latest_non_zero(tdee_kcal)
+    latest_water_ml = latest_non_zero(water_consumed_ml)
 
     today_sql = """
-        SELECT COALESCE(SUM(daily_kcal), 0) AS kcal_today
-        FROM daily_meal
-        WHERE user_name = ?
-          AND entry_date = date('now')
+    SELECT COALESCE(SUM(daily_kcal), 0) AS kcal_today
+    FROM daily_meal
+    WHERE user_name = ?
+      AND entry_date = date('now')
     """
 
     profile_sql = """
-        SELECT sex, date_of_birth, height_cm, start_weight_kg, activity_level, display_name, email
-        FROM users
-        WHERE user_name = ?
-        LIMIT 1
+    SELECT sex, date_of_birth, height_cm, start_weight_kg, activity_level, display_name, email
+    FROM users
+    WHERE user_name = ?
+    LIMIT 1
     """
-	
-    #   Get Estimated Maintenance Value
+
     today = conn.execute(today_sql, (user_name,)).fetchone()
     profile = conn.execute(profile_sql, (user_name,)).fetchone()
 
@@ -137,8 +146,11 @@ def build_trends_payload(conn, user_name: str, period: str):
     if latest_weight_kg is not None:
         profile_data["weight_kg"] = latest_weight_kg
 
-    estimated_maintenance_kcal = build_energy_summary(profile_data, today["kcal_today"]).get("tdee", 0)
-	
+    estimated_maintenance_kcal = build_energy_summary(
+        profile_data,
+        today["kcal_today"]
+    ).get("tdee", 0)
+
     return {
         "selected_period": period,
         "history_rows": history_rows,
@@ -149,6 +161,11 @@ def build_trends_payload(conn, user_name: str, period: str):
         "avg_activity_kcal": avg_activity_kcal,
         "avg_tdee_kcal": avg_tdee_kcal,
         "avg_net_balance_kcal": avg_net_balance_kcal,
+
+        "avg_water_ml": avg_water_ml,
+        "avg_water_target_ml": avg_water_target_ml,
+        "water_target_hit_rate": water_target_hit_rate,
+        "latest_water_ml": latest_water_ml,
 
         "latest_net_balance_kcal": latest_net_balance,
         "latest_tdee_kcal": latest_tdee,
@@ -188,6 +205,8 @@ def build_trends_payload(conn, user_name: str, period: str):
             "body_fat_pct": body_fat_pct,
             "muscle_mass_pct": muscle_mass_pct,
             "bmi": bmi_values,
+            "water_consumed_ml": water_consumed_ml,
+            "water_target_ml": water_target_ml,
             "maintenance_kcal": [estimated_maintenance_kcal] * len(labels) if estimated_maintenance_kcal else [],
         },
     }
@@ -244,6 +263,15 @@ def load_trends_history(conn, user_name: str, start_date: str, end_date: str):
             FROM body_metrics bm
             WHERE bm.user_name = ?
               AND bm.entry_date BETWEEN ? AND ?
+        ),
+        water AS (
+            SELECT
+                dw.entry_date AS day,
+                COALESCE(dw.consumed_ml, 0) AS water_consumed_ml,
+                COALESCE(dw.target_ml, 2000) AS water_target_ml
+            FROM daily_water dw
+            WHERE dw.user_name = ?
+              AND dw.entry_date BETWEEN ? AND ?
         )
         SELECT
             d.day,
@@ -256,16 +284,20 @@ def load_trends_history(conn, user_name: str, start_date: str, end_date: str):
             m.weight_kg,
             m.body_fat_pct,
             m.muscle_mass_pct,
-            m.bmi
+            m.bmi,
+            COALESCE(w.water_consumed_ml, 0) AS water_consumed_ml,
+            COALESCE(w.water_target_ml, 2000) AS water_target_ml
         FROM dates d
         LEFT JOIN intake i ON i.day = d.day
         LEFT JOIN activity a ON a.day = d.day
         LEFT JOIN metrics m ON m.day = d.day
+        LEFT JOIN water w ON w.day = d.day
         ORDER BY d.day ASC
         """,
         (
             start_date,
             end_date,
+            user_name, start_date, end_date,
             user_name, start_date, end_date,
             user_name, start_date, end_date,
             user_name, start_date, end_date,
@@ -286,6 +318,8 @@ def load_trends_history(conn, user_name: str, start_date: str, end_date: str):
             "body_fat_pct": row["body_fat_pct"],
             "muscle_mass_pct": row["muscle_mass_pct"],
             "bmi": row["bmi"],
+            "water_consumed_ml": row["water_consumed_ml"] or 0,
+            "water_target_ml": row["water_target_ml"] or 2000,
         })
 
     return history_rows
