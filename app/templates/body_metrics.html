@@ -4,10 +4,25 @@
 
 {% block content %}
 <section class="page-head">
-    <div>
-        <p class="eyebrow">Body metrics</p>
-        <h1>Log body metrics</h1>
-        <p class="muted">Track weight, body fat, muscle mass, and BMI.</p>
+    <div class="page-head-title-row">
+        <div>
+            <p class="eyebrow">Body metrics</p>
+            <h1>Log body metrics</h1>
+            <p class="muted">Track weight, body fat, muscle mass, and BMI.</p>
+        </div>
+
+        <form method="get" action="/body-metrics" class="date-switcher">
+            <input
+                type="date"
+                name="entry_date"
+                value="{{ profile.entry_date }}"
+                required
+                onchange="this.form.submit()"
+            >
+            <noscript>
+                <button type="submit" class="btn btn-secondary">Go</button>
+            </noscript>
+        </form>
     </div>
 </section>
 
@@ -21,9 +36,11 @@
     {% endif %}
 
     <form method="post" action="/body-metrics" class="stack">
+        <input type="hidden" name="entry_date" value="{{ profile.entry_date }}">
+
         <label>
             Date
-            <input type="date" name="entry_date" value="{{ profile.entry_date }}" required>
+            <input type="date" value="{{ profile.entry_date }}" disabled>
         </label>
 
         <label>

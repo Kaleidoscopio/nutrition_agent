@@ -21,78 +21,182 @@
         <div class="form-success">{{ success }}</div>
     {% endif %}
 
-    <form method="get" action="/admin" class="stack" style="margin-bottom: 1.5rem;">
-        <label>
-            Search aliases or foods
-            <input type="text" name="query_filter" value="{{ query }}" placeholder="e.g. yoghurt, chicken breast">
-        </label>
-        <div class="inline-edit-buttons">
-            <button type="submit" class="btn btn-primary">Search</button>
-            <a href="/admin" class="btn btn-secondary">Clear</a>
-        </div>
-    </form>
-
     <section class="detail-card" style="margin-bottom: 1.5rem;">
-        <h2>Add alias</h2>
+        <h2>Find food</h2>
+        <form method="get" action="/admin" class="stack">
+            <div class="admin-search-grid">
+                <label>
+                    Search food
+                    <input type="text" name="query_filter" value="{{ query_filter }}" placeholder="e.g. chicken, yoghurt, rice">
+                </label>
+
+                <label>
+                    Category
+                    <select name="category_filter">
+                        <option value="">All categories</option>
+                        {% for category in categories %}
+                            <option value="{{ category }}" {% if category_filter == category %}selected{% endif %}>{{ category }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+            </div>
+
+            <div class="inline-edit-buttons">
+                <button type="submit" class="btn btn-primary">Search</button>
+                <a href="/admin" class="btn btn-secondary">Clear</a>
+            </div>
+        </form>
+
+        {% if food_results %}
+            <div class="admin-results-list">
+                {% for food in food_results %}
+                    <div class="admin-result-row">
+                        <div class="admin-result-copy">
+                            <strong>{{ food.food_name }}</strong>
+                            <div class="admin-result-meta">
+                                {{ food.food_category or 'Uncategorised' }} · {{ food.calories_100g or '—' }} kcal / 100g
+                            </div>
+                        </div>
+
+                        <div class="admin-result-action">
+                            <a href="/admin?query_filter={{ query_filter }}&category_filter={{ category_filter }}&selected_food_id={{ food.id }}" class="btn btn-secondary">
+                                Manage aliases
+                            </a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% elif query_filter or category_filter %}
+            <p style="margin-top: 1rem;">No foods found for the selected filters.</p>
+        {% endif %}
+    </section>
+
+    {% if show_alias_directory %}
+    <section class="detail-card">
+        <h2>Alias directory</h2>
+
+        {% if alias_directory %}
+        <div class="alias-table-wrap">
+            <table class="alias-table">
+                <thead>
+                    <tr>
+                        <th>Alias</th>
+                        <th>Food</th>
+                        <th>Category</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in alias_directory %}
+                        <tr>
+                            <td data-label="Alias">{{ item.alias }}</td>
+                            <td data-label="Food">{{ item.food_name }}</td>
+                            <td data-label="Category">{{ item.food_category or '—' }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            <p>No aliases found.</p>
+        {% endif %}
+    </section>
+    {% endif %}
+</section>
+
+{% if selected_food %}
+<dialog id="alias-manager-dialog" class="settings-dialog">
+    <div class="dialog-body">
+        <div class="dialog-header">
+            <div class="page-head">
+                <div class="page-head-main">
+                    <p class="eyebrow">Alias manager</p>
+                    <div class="page-head-title-row">
+                        <h2>{{ selected_food.food_name }}</h2>
+                    </div>
+                    <p class="muted-copy">
+                        {{ selected_food.food_category or 'Uncategorised' }} · {{ selected_food.calories_100g or '—' }} kcal / 100g
+                    </p>
+                </div>
+            </div>
+        </div>
         <form method="post" action="/admin/food-alias/add" class="stack">
-            <label>
-                Alias
-                <input type="text" name="alias" required>
-            </label>
+            <input type="hidden" name="selected_food_id" value="{{ selected_food.id }}">
+            <input type="hidden" name="query_filter" value="{{ query_filter }}">
+            <input type="hidden" name="category_filter" value="{{ category_filter }}">
 
             <label>
-                Food
-                <select name="food_id" required>
-                    {% for food in foods %}
-                        <option value="{{ food.id }}">
-                            {{ food.food_name }}{% if food.food_category %} — {{ food.food_category }}{% endif %}
-                        </option>
-                    {% endfor %}
-                </select>
+                New alias
+                <input type="text" name="alias" required placeholder="Add a new alias">
             </label>
 
             <div class="inline-edit-buttons">
                 <button type="submit" class="btn btn-primary">Add alias</button>
+                <button type="button" class="btn btn-secondary" id="close-alias-dialog">Close</button>
             </div>
         </form>
-    </section>
 
-    <section class="detail-card">
-        <h2>Existing aliases</h2>
+        {% if selected_food_aliases %}
+        <div class="alias-editor-list">
+            {% for item in selected_food_aliases %}
+                <div class="alias-editor-item">
+                    <form method="post" action="/admin/food-alias/update/{{ item.id }}" class="alias-editor-form">
+                        <input type="hidden" name="selected_food_id" value="{{ selected_food.id }}">
+                        <input type="hidden" name="query_filter" value="{{ query_filter }}">
+                        <input type="hidden" name="category_filter" value="{{ category_filter }}">
 
-        {% if aliases %}
-            <div class="stack">
-                {% for item in aliases %}
-                    <form method="post" action="/admin/food-alias/update/{{ item.id }}" class="stack" style="padding: 1rem; border: 1px solid rgba(0,0,0,0.08); border-radius: 0.75rem; margin-bottom: 1rem;">
                         <label>
                             Alias
                             <input type="text" name="alias" value="{{ item.alias }}" required>
                         </label>
 
-                        <label>
-                            Food
-                            <select name="food_id" required>
-                                {% for food in foods %}
-                                    <option value="{{ food.id }}" {% if food.id == item.food_id %}selected{% endif %}>
-                                        {{ food.food_name }}{% if food.food_category %} — {{ food.food_category }}{% endif %}
-                                    </option>
-                                {% endfor %}
-                            </select>
-                        </label>
-
-                        <div class="inline-edit-buttons">
-                            <button type="submit" class="btn btn-primary">Save</button>
-                        </div>
+                        <div class="alias-editor-actions">
+                            <button type="submit" class="btn btn-primary">Modify</button>
                     </form>
 
-                    <form method="post" action="/admin/food-alias/delete/{{ item.id }}" onsubmit="return confirm('Delete this alias?');" style="margin-top: -0.5rem; margin-bottom: 1.5rem;">
+                    <form method="post" action="/admin/food-alias/delete/{{ item.id }}" onsubmit="return confirm('Delete this alias?');">
+                        <input type="hidden" name="selected_food_id" value="{{ selected_food.id }}">
+                        <input type="hidden" name="query_filter" value="{{ query_filter }}">
+                        <input type="hidden" name="category_filter" value="{{ category_filter }}">
                         <button type="submit" class="btn btn-secondary">Delete</button>
                     </form>
-                {% endfor %}
-            </div>
+                        </div>
+                </div>
+            {% endfor %}
+        </div>
         {% else %}
-            <p>No aliases found.</p>
+            <p>No aliases yet for this food.</p>
         {% endif %}
-    </section>
-</section>
+    </div>
+</dialog>
+
+<script>
+    const aliasDialog = document.getElementById('alias-manager-dialog');
+    const closeAliasDialog = document.getElementById('close-alias-dialog');
+
+    if (aliasDialog) {
+        aliasDialog.showModal();
+    }
+
+    if (closeAliasDialog && aliasDialog) {
+        closeAliasDialog.addEventListener('click', () => {
+            aliasDialog.close();
+            const params = new URLSearchParams(window.location.search);
+            params.delete('selected_food_id');
+            const nextUrl = `${window.location.pathname}${params.toString() ? '?' + params.toString() : ''}`;
+            window.location.href = nextUrl;
+        });
+    }
+
+    if (aliasDialog) {
+        aliasDialog.addEventListener('close', () => {
+            const params = new URLSearchParams(window.location.search);
+            params.delete('selected_food_id');
+            const nextUrl = `${window.location.pathname}${params.toString() ? '?' + params.toString() : ''}`;
+            if (window.location.search.includes('selected_food_id=')) {
+                window.history.replaceState({}, '', nextUrl);
+            }
+        });
+    }
+</script>
+{% endif %}
 {% endblock %}

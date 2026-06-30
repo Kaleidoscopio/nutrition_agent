@@ -4,6 +4,7 @@ from app.core.auth import get_current_user_name, login_redirect
 from app.core.templates import templates
 from app.db.database import get_db_connection
 from app.services.body_metrics_service import calculate_bmi
+from starlette.responses import RedirectResponse
 
 router = APIRouter()
 
@@ -11,13 +12,14 @@ router = APIRouter()
 #   Body-Metrics Router - GET
 #
 @router.get("/body-metrics")
-async def body_metrics_page(request: Request, entry_date: str | None = None):
+async def body_metrics_page(request: Request, entry_date: str | None = None, saved: int | None = None):
     redirect = login_redirect(request)
     if redirect:
         return redirect
 
     user_name = get_current_user_name(request)
     entry_date = entry_date or date.today().isoformat()
+    success = "Body metrics saved successfully." if saved == 1 else None
 
     conn = get_db_connection()
     current = conn.execute(
@@ -47,7 +49,7 @@ async def body_metrics_page(request: Request, entry_date: str | None = None):
             "user": request.session.get("user"),
             "profile": profile,
             "error": None,
-            "success": None,
+            "success": success,
         },
     )
 
@@ -135,15 +137,7 @@ async def add_body_metrics(
         )
 
     conn.close()
-
-    return templates.TemplateResponse(
-        request,
-        "body_metrics.html",
-        {
-            "request": request,
-            "user": request.session.get("user"),
-            "error": None,
-            "success": "Body metrics saved successfully.",
-            "profile": profile,
-        },
+    return RedirectResponse(
+        url=f"/body-metrics?entry_date={entry_date}&saved=1",
+        status_code=303,
     )
