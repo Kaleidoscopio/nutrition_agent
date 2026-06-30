@@ -11,19 +11,34 @@
             <p class="muted">Energy balance, hydration, body composition trends, and weight projections.</p>
         </div>
 
-        <form method="get" action="/trends" class="inline-edit-form">
-            <label for="period" class="sr-only">Period</label>
-            <select id="period" name="period" onchange="this.form.submit()">
-                <option value="7d" {% if selected_period == "7d" %}selected{% endif %}>Last 7 days</option>
-                <option value="30d" {% if selected_period == "30d" %}selected{% endif %}>Last 30 days</option>
-                <option value="90d" {% if selected_period == "90d" %}selected{% endif %}>Last 90 days</option>
-                <option value="180d" {% if selected_period == "180d" %}selected{% endif %}>Last 180 days</option>
-                <option value="365d" {% if selected_period == "365d" %}selected{% endif %}>Last 365 days</option>
-            </select>
-            <noscript>
-                <button type="submit" class="btn btn-secondary">Apply</button>
-            </noscript>
-        </form>
+        <div class="page-head-actions">
+            <form method="get" action="/trends" class="inline-edit-form trends-toolbar-form">
+                <label for="period" class="sr-only">Period</label>
+                <select id="period" name="period" onchange="this.form.submit()">
+                    <option value="7d" {% if selected_period == "7d" %}selected{% endif %}>Last 7 days</option>
+                    <option value="30d" {% if selected_period == "30d" %}selected{% endif %}>Last 30 days</option>
+                    <option value="90d" {% if selected_period == "90d" %}selected{% endif %}>Last 90 days</option>
+                    <option value="180d" {% if selected_period == "180d" %}selected{% endif %}>Last 180 days</option>
+                    <option value="365d" {% if selected_period == "365d" %}selected{% endif %}>Last 365 days</option>
+                </select>
+                <noscript>
+                    <button type="submit" class="btn btn-secondary">Apply</button>
+                </noscript>
+            </form>
+
+            <a
+                href="/trends/export?period={{ selected_period }}"
+                class="icon-btn"
+                aria-label="Export trends and meals as CSV zip"
+                title="Export CSV"
+            >
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M12 3v11"></path>
+                    <path d="M8 10l4 4 4-4"></path>
+                    <path d="M4 21h16"></path>
+                </svg>
+            </a>
+        </div>
     </div>
 </section>
 
@@ -101,7 +116,7 @@
     </article>
 </section>
 
-<section class="detail-card">
+<section class="detail-card chart-card">
     <div class="section-head">
         <div>
             <h3>Weight trend</h3>
@@ -111,34 +126,28 @@
     <div class="chart-shell">
         <canvas id="weightChart"></canvas>
     </div>
+
+    <div class="forecast-grid">
+        <div class="forecast-chip">
+            <span class="forecast-label">30 days</span>
+            <strong>{{ projection_30d }}</strong>
+        </div>
+        <div class="forecast-chip">
+            <span class="forecast-label">90 days</span>
+            <strong>{{ projection_90d }}</strong>
+        </div>
+        <div class="forecast-chip">
+            <span class="forecast-label">180 days</span>
+            <strong>{{ projection_180d }}</strong>
+        </div>
+        <div class="forecast-chip">
+            <span class="forecast-label">365 days</span>
+            <strong>{{ projection_365d }}</strong>
+        </div>
+    </div>
 </section>
 
-<section class="card-grid">
-    <article class="stat-card">
-        <p class="stat-label">30-day projection</p>
-        <h2>{{ projection_30d }}</h2>
-        <p class="stat-meta">Based on observed trend</p>
-    </article>
-    <article class="stat-card">
-        <p class="stat-label">90-day projection</p>
-        <h2>{{ projection_90d }}</h2>
-        <p class="stat-meta">Based on observed trend</p>
-    </article>
-
-    <article class="stat-card">
-        <p class="stat-label">180-day projection</p>
-        <h2>{{ projection_180d }}</h2>
-        <p class="stat-meta">Based on observed trend</p>
-    </article>
-
-    <article class="stat-card">
-        <p class="stat-label">365-day projection</p>
-        <h2>{{ projection_365d }}</h2>
-        <p class="stat-meta">Based on observed trend</p>
-    </article>
-</section>
-
-<section class="detail-card">
+<section class="detail-card chart-card">
     <div class="section-head">
         <div>
             <h3>Energy balance</h3>
@@ -150,7 +159,7 @@
     </div>
 </section>
 
-<section class="detail-card">
+<section class="detail-card chart-card">
     <div class="section-head">
         <div>
             <h3>Net balance</h3>
@@ -162,7 +171,7 @@
     </div>
 </section>
 
-<section class="detail-card">
+<section class="detail-card chart-card">
     <div class="section-head">
         <div>
             <h3>Hydration trend</h3>
@@ -174,7 +183,7 @@
     </div>
 </section>
 
-<section class="detail-card">
+<section class="detail-card chart-card">
     <div class="section-head">
         <div>
             <h3>Body composition</h3>
@@ -186,7 +195,7 @@
     </div>
 </section>
 
-<section class="detail-card">
+<section class="detail-card trends-history">
     <div class="section-head">
         <div>
             <h3>Detailed records</h3>
@@ -210,6 +219,7 @@
                     <th>Weight</th>
                     <th>Body fat</th>
                     <th>Muscle mass</th>
+                    <th>BMI</th>
                 </tr>
             </thead>
             <tbody>
@@ -227,6 +237,7 @@
                     <td>{% if row.weight_kg is not none %}{{ row.weight_kg }} kg{% else %}—{% endif %}</td>
                     <td>{% if row.body_fat_pct is not none %}{{ row.body_fat_pct }}%{% else %}—{% endif %}</td>
                     <td>{% if row.muscle_mass_pct is not none %}{{ row.muscle_mass_pct }}%{% else %}—{% endif %}</td>
+                    <td>{% if row.bmi is not none %}{{ row.bmi }}{% else %}—{% endif %}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -234,231 +245,286 @@
     </div>
 </section>
 
+<style>
+.page-head-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--space-3);
+}
+
+.trends-toolbar-form {
+    margin-top: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+}
+
+.icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    flex: 0 0 auto;
+}
+
+.icon-btn:hover {
+    background: var(--surface-2);
+    color: var(--primary);
+}
+
+@media (max-width: 640px) {
+    .page-head-actions {
+        justify-content: stretch;
+        flex-wrap: wrap;
+    }
+
+    .trends-toolbar-form {
+        flex: 1 1 auto;
+    }
+}
+</style>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    const chartData = {{ chart_data | tojson }};
+const chartData = {{ chart_data | tojson }};
 
-    const sharedGridColor = "rgba(148, 163, 184, 0.18)";
-    const sharedTickColor = "#64748b";
+const sharedGridColor = "rgba(148, 163, 184, 0.18)";
+const sharedTickColor = "#64748b";
 
-    const sharedOptions = {
-        responsive: true,
-        maintainAspectRatio: false,
-        interaction: {
-            mode: "index",
-            intersect: false,
+const sharedOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: {
+        mode: "index",
+        intersect: false,
+    },
+    plugins: {
+        legend: {
+            display: true,
         },
-        plugins: {
-            legend: {
-                display: true,
+    },
+    scales: {
+        x: {
+            ticks: { color: sharedTickColor },
+            grid: { color: sharedGridColor },
+        },
+        y: {
+            ticks: { color: sharedTickColor },
+            grid: { color: sharedGridColor },
+        },
+    },
+};
+
+const weightCanvas = document.getElementById("weightChart");
+if (weightCanvas) {
+    new Chart(weightCanvas, {
+        type: "line",
+        data: {
+            labels: chartData.labels,
+            datasets: [
+                {
+                    label: "Weight (kg)",
+                    data: chartData.weights,
+                    borderColor: "#2563eb",
+                    backgroundColor: "rgba(37, 99, 235, 0.15)",
+                    fill: false,
+                    tension: 0.25,
+                    pointRadius: 2,
+                }
+            ],
+        },
+        options: {
+            ...sharedOptions,
+            scales: {
+                ...sharedOptions.scales,
+                y: {
+                    ...sharedOptions.scales.y,
+                    beginAtZero: false,
+                },
             },
         },
-        scales: {
-            x: {
-                ticks: { color: sharedTickColor },
-                grid: { color: sharedGridColor },
-            },
-            y: {
-                beginAtZero: false,
-                ticks: { color: sharedTickColor },
-                grid: { color: sharedGridColor },
+    });
+}
+
+const energyCanvas = document.getElementById("energyChart");
+if (energyCanvas) {
+    new Chart(energyCanvas, {
+        type: "line",
+        data: {
+            labels: chartData.labels,
+            datasets: [
+                {
+                    label: "Calories in",
+                    data: chartData.calories_in,
+                    borderColor: "#f97316",
+                    backgroundColor: "rgba(249, 115, 22, 0.15)",
+                    fill: false,
+                    tension: 0.25,
+                    pointRadius: 2,
+                },
+                {
+                    label: "Calories out",
+                    data: chartData.calories_out,
+                    borderColor: "#dc2626",
+                    backgroundColor: "rgba(220, 38, 38, 0.15)",
+                    fill: false,
+                    tension: 0.25,
+                    pointRadius: 2,
+                },
+                {
+                    label: "TDEE",
+                    data: chartData.tdee_kcal,
+                    borderColor: "#7c3aed",
+                    backgroundColor: "rgba(124, 58, 237, 0.15)",
+                    fill: false,
+                    tension: 0.25,
+                    pointRadius: 1,
+                },
+                {
+                    label: "Maintenance",
+                    data: chartData.maintenance_kcal,
+                    borderColor: "#16a34a",
+                    backgroundColor: "rgba(22, 163, 74, 0.15)",
+                    fill: false,
+                    tension: 0,
+                    pointRadius: 0,
+                    borderDash: [6, 4],
+                }
+            ],
+        },
+        options: {
+            ...sharedOptions,
+            scales: {
+                ...sharedOptions.scales,
+                y: {
+                    ...sharedOptions.scales.y,
+                    beginAtZero: true,
+                },
             },
         },
-    };
+    });
+}
 
-    const weightCanvas = document.getElementById("weightChart");
-    if (weightCanvas) {
-        new Chart(weightCanvas, {
-            type: "line",
-            data: {
-                labels: chartData.labels,
-                datasets: [
-                    {
-                        label: "Weight (kg)",
-                        data: chartData.weights,
-                        borderColor: "#2563eb",
-                        backgroundColor: "rgba(37, 99, 235, 0.15)",
-                        fill: false,
-                        tension: 0.25,
-                        pointRadius: 2,
-                    }
-                ],
-            },
-            options: {
-                ...sharedOptions,
-                scales: {
-                    ...sharedOptions.scales,
-                    y: {
-                        ...sharedOptions.scales.y,
-                        beginAtZero: false,
-                    },
+const balanceCanvas = document.getElementById("balanceChart");
+if (balanceCanvas) {
+    new Chart(balanceCanvas, {
+        type: "bar",
+        data: {
+            labels: chartData.labels,
+            datasets: [
+                {
+                    label: "Net balance",
+                    data: chartData.net_balance_kcal,
+                    backgroundColor: chartData.net_balance_kcal.map(value =>
+                        value >= 0 ? "rgba(239, 68, 68, 0.7)" : "rgba(34, 197, 94, 0.7)"
+                    ),
+                    borderColor: chartData.net_balance_kcal.map(value =>
+                        value >= 0 ? "rgb(239, 68, 68)" : "rgb(34, 197, 94)"
+                    ),
+                    borderWidth: 1,
+                }
+            ],
+        },
+        options: {
+            ...sharedOptions,
+            scales: {
+                ...sharedOptions.scales,
+                y: {
+                    ...sharedOptions.scales.y,
+                    beginAtZero: true,
                 },
             },
-        });
-    }
+        },
+    });
+}
 
-    const energyCanvas = document.getElementById("energyChart");
-    if (energyCanvas) {
-        new Chart(energyCanvas, {
-            type: "line",
-            data: {
-                labels: chartData.labels,
-                datasets: [
-                    {
-                        label: "Calories in",
-                        data: chartData.calories_in,
-                        borderColor: "#f97316",
-                        backgroundColor: "rgba(249, 115, 22, 0.15)",
-                        fill: false,
-                        tension: 0.25,
-                        pointRadius: 2,
-                    },
-                    {
-                        label: "Calories out",
-                        data: chartData.calories_out,
-                        borderColor: "#dc2626",
-                        backgroundColor: "rgba(220, 38, 38, 0.15)",
-                        fill: false,
-                        tension: 0.25,
-                        pointRadius: 2,
-                    },
-                    {
-                        label: "TDEE",
-                        data: chartData.tdee_kcal,
-                        borderColor: "#7c3aed",
-                        backgroundColor: "rgba(124, 58, 237, 0.15)",
-                        fill: false,
-                        tension: 0.25,
-                        pointRadius: 1,
-                    },
-                    {
-                        label: "Maintenance",
-                        data: chartData.maintenance_kcal,
-                        borderColor: "#16a34a",
-                        backgroundColor: "rgba(22, 163, 74, 0.15)",
-                        fill: false,
-                        tension: 0,
-                        pointRadius: 0,
-                        borderDash: [6, 4],
-                    }
-                ],
-            },
-            options: sharedOptions,
-        });
-    }
-
-    const balanceCanvas = document.getElementById("balanceChart");
-    if (balanceCanvas) {
-        new Chart(balanceCanvas, {
-            type: "bar",
-            data: {
-                labels: chartData.labels,
-                datasets: [
-                    {
-                        label: "Net balance",
-                        data: chartData.net_balance_kcal,
-                        backgroundColor: chartData.net_balance_kcal.map(value =>
-                            value >= 0 ? "rgba(239, 68, 68, 0.7)" : "rgba(34, 197, 94, 0.7)"
-                        ),
-                        borderColor: chartData.net_balance_kcal.map(value =>
-                            value >= 0 ? "rgb(239, 68, 68)" : "rgb(34, 197, 94)"
-                        ),
-                        borderWidth: 1,
-                    }
-                ],
-            },
-            options: {
-                ...sharedOptions,
-                scales: {
-                    ...sharedOptions.scales,
-                    y: {
-                        ...sharedOptions.scales.y,
-                        beginAtZero: true,
-                    },
+const waterCanvas = document.getElementById("waterChart");
+if (waterCanvas) {
+    new Chart(waterCanvas, {
+        type: "line",
+        data: {
+            labels: chartData.labels,
+            datasets: [
+                {
+                    label: "Water consumed (ml)",
+                    data: chartData.water_consumed_ml,
+                    borderColor: "#0ea5e9",
+                    backgroundColor: "rgba(14, 165, 233, 0.15)",
+                    fill: false,
+                    tension: 0.25,
+                    pointRadius: 2,
+                },
+                {
+                    label: "Water target (ml)",
+                    data: chartData.water_target_ml,
+                    borderColor: "#16a34a",
+                    backgroundColor: "rgba(22, 163, 74, 0.15)",
+                    fill: false,
+                    tension: 0.25,
+                    pointRadius: 0,
+                    borderDash: [6, 4],
+                }
+            ],
+        },
+        options: {
+            ...sharedOptions,
+            scales: {
+                ...sharedOptions.scales,
+                y: {
+                    ...sharedOptions.scales.y,
+                    beginAtZero: true,
                 },
             },
-        });
-    }
+        },
+    });
+}
 
-    const waterCanvas = document.getElementById("waterChart");
-    if (waterCanvas) {
-        new Chart(waterCanvas, {
-            type: "line",
-            data: {
-                labels: chartData.labels,
-                datasets: [
-                    {
-                        label: "Water consumed (ml)",
-                        data: chartData.water_consumed_ml,
-                        borderColor: "#0ea5e9",
-                        backgroundColor: "rgba(14, 165, 233, 0.15)",
-                        fill: false,
-                        tension: 0.25,
-                        pointRadius: 2,
-                    },
-                    {
-                        label: "Water target (ml)",
-                        data: chartData.water_target_ml,
-                        borderColor: "#16a34a",
-                        backgroundColor: "rgba(22, 163, 74, 0.15)",
-                        fill: false,
-                        tension: 0.25,
-                        pointRadius: 0,
-                        borderDash: [6, 4],
-                    }
-                ],
-            },
-            options: {
-                ...sharedOptions,
-                scales: {
-                    ...sharedOptions.scales,
-                    y: {
-                        ...sharedOptions.scales.y,
-                        beginAtZero: true,
-                    },
+const compositionCanvas = document.getElementById("compositionChart");
+if (compositionCanvas) {
+    new Chart(compositionCanvas, {
+        type: "line",
+        data: {
+            labels: chartData.labels,
+            datasets: [
+                {
+                    label: "Body fat %",
+                    data: chartData.body_fat_pct,
+                    borderColor: "#ec4899",
+                    backgroundColor: "rgba(236, 72, 153, 0.15)",
+                    fill: false,
+                    tension: 0.25,
+                    pointRadius: 2,
+                },
+                {
+                    label: "Muscle mass %",
+                    data: chartData.muscle_mass_pct,
+                    borderColor: "#14b8a6",
+                    backgroundColor: "rgba(20, 184, 166, 0.15)",
+                    fill: false,
+                    tension: 0.25,
+                    pointRadius: 2,
+                }
+            ],
+        },
+        options: {
+            ...sharedOptions,
+            scales: {
+                ...sharedOptions.scales,
+                y: {
+                    ...sharedOptions.scales.y,
+                    beginAtZero: true,
                 },
             },
-        });
-    }
-
-    const compositionCanvas = document.getElementById("compositionChart");
-    if (compositionCanvas) {
-        new Chart(compositionCanvas, {
-            type: "line",
-            data: {
-                labels: chartData.labels,
-                datasets: [
-                    {
-                        label: "Body fat %",
-                        data: chartData.body_fat_pct,
-                        borderColor: "#ec4899",
-                        backgroundColor: "rgba(236, 72, 153, 0.15)",
-                        fill: false,
-                        tension: 0.25,
-                        pointRadius: 2,
-                    },
-                    {
-                        label: "Muscle mass %",
-                        data: chartData.muscle_mass_pct,
-                        borderColor: "#14b8a6",
-                        backgroundColor: "rgba(20, 184, 166, 0.15)",
-                        fill: false,
-                        tension: 0.25,
-                        pointRadius: 2,
-                    }
-                ],
-            },
-            options: {
-                ...sharedOptions,
-                scales: {
-                    ...sharedOptions.scales,
-                    y: {
-                        ...sharedOptions.scales.y,
-                        beginAtZero: true,
-                    },
-                },
-            },
-        });
-    }
+        },
+    });
+}
 </script>
 {% endblock %}

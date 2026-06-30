@@ -1,5 +1,6 @@
 from datetime import date, timedelta
 from statistics import mean
+
 from app.services.metabolism_service import build_energy_summary
 
 PERIOD_TO_DAYS = {
@@ -110,10 +111,7 @@ def build_trends_payload(conn, user_name: str, period: str):
     avg_water_ml = average_ignore_zero(water_consumed_ml)
     avg_water_target_ml = average_ignore_zero(water_target_ml)
 
-    days_with_target = [
-        row for row in history_rows
-        if (row["water_target_ml"] or 0) > 0
-    ]
+    days_with_target = [row for row in history_rows if (row["water_target_ml"] or 0) > 0]
     days_target_met = [
         row for row in history_rows
         if (row["water_target_ml"] or 0) > 0
@@ -154,22 +152,18 @@ def build_trends_payload(conn, user_name: str, period: str):
     return {
         "selected_period": period,
         "history_rows": history_rows,
-
         "avg_calories_in": avg_calories_in,
         "avg_calories_out": avg_calories_out,
         "avg_bmr_kcal": avg_bmr_kcal,
         "avg_activity_kcal": avg_activity_kcal,
         "avg_tdee_kcal": avg_tdee_kcal,
         "avg_net_balance_kcal": avg_net_balance_kcal,
-
         "avg_water_ml": avg_water_ml,
         "avg_water_target_ml": avg_water_target_ml,
         "water_target_hit_rate": water_target_hit_rate,
         "latest_water_ml": latest_water_ml,
-
         "latest_net_balance_kcal": latest_net_balance,
         "latest_tdee_kcal": latest_tdee,
-
         "weight_delta": weight_delta,
         "latest_weight": f"{latest_weight_kg:.1f} kg" if latest_weight_kg is not None else "—",
         "latest_body_fat": (
@@ -187,12 +181,10 @@ def build_trends_payload(conn, user_name: str, period: str):
             if latest_metrics_row and latest_metrics_row["bmi"] is not None
             else None
         ),
-
         "projection_30d": build_projection(latest_weight_kg, daily_weight_delta, 30),
         "projection_90d": build_projection(latest_weight_kg, daily_weight_delta, 90),
         "projection_180d": build_projection(latest_weight_kg, daily_weight_delta, 180),
         "projection_365d": build_projection(latest_weight_kg, daily_weight_delta, 365),
-
         "chart_data": {
             "labels": labels,
             "calories_in": calories_in,
@@ -314,12 +306,66 @@ def load_trends_history(conn, user_name: str, start_date: str, end_date: str):
             "activity_kcal": row["activity_kcal"] or 0,
             "tdee_kcal": row["tdee_kcal"] or 0,
             "net_balance_kcal": row["net_balance_kcal"] or 0,
+            "water_consumed_ml": row["water_consumed_ml"] or 0,
+            "water_target_ml": row["water_target_ml"] or 2000,
             "weight_kg": row["weight_kg"],
             "body_fat_pct": row["body_fat_pct"],
             "muscle_mass_pct": row["muscle_mass_pct"],
             "bmi": row["bmi"],
-            "water_consumed_ml": row["water_consumed_ml"] or 0,
-            "water_target_ml": row["water_target_ml"] or 2000,
         })
 
     return history_rows
+
+
+def export_meal_rows(conn, user_name: str, start_date: str, end_date: str):
+    rows = conn.execute(
+        """
+        SELECT
+            dm.entry_date,
+            dm.id AS daily_meal_id,
+            dm.meal_status,
+            dm.daily_kcal,
+            dm.notes AS daily_meal_notes,
+            dmd.id AS detail_id,
+            dmd.created_at AS detail_created_at,
+            dmd.meal_type,
+            dmd.food_id,
+            dmd.quantity,
+            dmd.unit,
+            dmd.calories,
+            dmd.protein,
+            dmd.carbs,
+            dmd.fat,
+            dmd.food_label
+        FROM daily_meal dm
+        LEFT JOIN daily_meal_detail dmd
+            ON dmd.daily_meal_id = dm.id
+        WHERE dm.user_name = ?
+          AND dm.entry_date BETWEEN ? AND ?
+        ORDER BY dm.entry_date ASC, dm.id ASC, dmd.id ASC
+        """,
+        (user_name, start_date, end_date),
+    ).fetchall()
+
+    meal_rows = []
+    for row in rows:
+        meal_rows.append({
+            "entry_date": row["entry_date"],
+            "daily_meal_id": row["daily_meal_id"],
+            "meal_status": row["meal_status"],
+            "daily_kcal": row["daily_kcal"],
+            "daily_meal_notes": row["daily_meal_notes"],
+            "detail_id": row["detail_id"],
+            "meal_type": row["meal_type"],
+            "food_id": row["food_id"],
+            "quantity": row["quantity"],
+            "unit": row["unit"],
+            "calories": row["calories"],
+            "protein": row["protein"],
+            "carbs": row["carbs"],
+            "fat": row["fat"],
+            "food_label": row["food_label"],
+            "detail_created_at": row["detail_created_at"],
+        })
+
+    return meal_rows
