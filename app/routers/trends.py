@@ -11,6 +11,7 @@ from app.db.database import get_db_connection
 from app.services.trends_service import (
     build_trends_payload,
     get_period_bounds,
+    export_meal_rows,
     load_trends_history,
     parse_period,
 )
