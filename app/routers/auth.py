@@ -226,7 +226,7 @@ async def register(
                 start_weight_kg,
                 activity_level
             )
-            VALUES (?, ?, ?, ?, 1, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, TRUE, ?, ?, ?, ?, ?)
             """,
             (
                 user_name,
@@ -519,7 +519,7 @@ async def force_password_reset(
     conn.execute(
         """
         UPDATE users
-        SET password_hash = ?, must_change_password = 0
+        SET password_hash = ?, must_change_password = FALSE
         WHERE user_name = ?
         """,
         (new_hash, user_name),
@@ -601,7 +601,7 @@ async def change_password(
         )
 
     conn.execute(
-        "UPDATE users SET password_hash = ?, must_change_password = 0 WHERE user_name = ?",
+        "UPDATE users SET password_hash = ?, must_change_password = FALSE WHERE user_name = ?",
         (hash_password(new_password), user_name),
     )
     conn.commit()

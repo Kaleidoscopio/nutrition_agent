@@ -9,21 +9,21 @@ def get_dashboard_stats(user_name: str):
         SELECT COALESCE(SUM(daily_kcal), 0) AS kcal_today
         FROM daily_meal
         WHERE user_name = ?
-          AND entry_date = date('now')
+          AND entry_date = CURRENT_DATE
     """
 
     week_sql = """
         SELECT COALESCE(ROUND(AVG(daily_kcal), 1), 0) AS kcal_avg_7d
         FROM daily_meal
         WHERE user_name = ?
-          AND entry_date >= date('now', '-6 days')
+          AND entry_date >= (CURRENT_DATE - 6)
     """
 
     month_sql = """
         SELECT COALESCE(ROUND(AVG(daily_kcal), 1), 0) AS kcal_avg_30d
         FROM daily_meal
         WHERE user_name = ?
-          AND entry_date >= date('now', '-29 days')
+          AND entry_date >= (CURRENT_DATE - 29)
     """
 
     global_sql = """
