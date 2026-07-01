@@ -12,7 +12,7 @@
         </div>
 
         <div class="page-head-actions">
-            <form method="get" action="/trends" class="inline-edit-form trends-toolbar-form">
+            <form method="get" action="/trends" class="trends-toolbar-form">
                 <label for="period" class="sr-only">Period</label>
                 <select id="period" name="period" onchange="this.form.submit()">
                     <option value="7d" {% if selected_period == "7d" %}selected{% endif %}>Last 7 days</option>
@@ -244,53 +244,6 @@
         </table>
     </div>
 </section>
-
-<style>
-.page-head-actions {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: var(--space-3);
-}
-
-.trends-toolbar-form {
-    margin-top: 0;
-    padding: 0;
-    border: 0;
-    background: transparent;
-}
-
-.icon-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 44px;
-    height: 44px;
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    background: var(--surface);
-    color: var(--text);
-    box-shadow: var(--shadow);
-    cursor: pointer;
-    flex: 0 0 auto;
-}
-
-.icon-btn:hover {
-    background: var(--surface-2);
-    color: var(--primary);
-}
-
-@media (max-width: 640px) {
-    .page-head-actions {
-        justify-content: stretch;
-        flex-wrap: wrap;
-    }
-
-    .trends-toolbar-form {
-        flex: 1 1 auto;
-    }
-}
-</style>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>

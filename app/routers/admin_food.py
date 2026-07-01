@@ -32,7 +32,8 @@ def require_admin(request: Request):
     return user
 
 
-def build_admin_url(query_filter: str = "", category_filter: str = "", selected_food_id: int | None = None):
+def build_admin_url(query_filter: str = "", category_filter: str = "", selected_food_id: int | None = None, 
+                    success: str | None = None, error: str | None = None):
     params = {}
     if query_filter:
         params["query_filter"] = query_filter
@@ -40,6 +41,10 @@ def build_admin_url(query_filter: str = "", category_filter: str = "", selected_
         params["category_filter"] = category_filter
     if selected_food_id:
         params["selected_food_id"] = selected_food_id
+    if success:
+        params["success"] = success
+    if error:
+        params["error"] = error
     return "/admin-food" if not params else f"/admin-food?{urlencode(params)}"
 
 def to_float_or_none(value: str, label: str):
@@ -62,14 +67,10 @@ def parse_food_form(
     fiber_100g: str,
     sugar_100g: str,
     salt_100g: str,
-    source: str,
-    source_food_id: str,
 ):
     parsed = {
         "food_name": food_name.strip(),
         "food_category": food_category.strip() or None,
-        "source": source.strip(),
-        "source_food_id": source_food_id.strip(),
         "calories_100g": to_float_or_none(calories_100g, "Calories / 100g"),
         "protein_100g": to_float_or_none(protein_100g, "Protein / 100g"),
         "carbs_100g": to_float_or_none(carbs_100g, "Carbs / 100g"),
@@ -81,10 +82,6 @@ def parse_food_form(
 
     if not parsed["food_name"]:
         raise ValueError("Food name is required.")
-    if not parsed["source"]:
-        raise ValueError("Source is required.")
-    if not parsed["source_food_id"]:
-        raise ValueError("Source food id is required.")
 
     return parsed
 
@@ -116,25 +113,40 @@ def load_categories(conn):
 
 
 def load_food_search_results(conn, query_filter: str | None = None, category_filter: str | None = None):
+    if not query_filter and not category_filter:
+        return [], False
+
     query = """
-        SELECT id, food_name, food_category, calories_100g, source, source_food_id
-        FROM food_master
-        WHERE 1 = 1
+    SELECT DISTINCT
+        fm.id,
+        fm.food_name,
+        fm.food_category,
+        fm.calories_100g
+    FROM food_master fm
+    LEFT JOIN food_alias fa ON fa.food_id = fm.id
+    WHERE 1 = 1
     """
     params = []
 
     if query_filter:
-        wildcard_name = f"%{query_filter.strip()}%"
         wildcard_search = f"%{normalize_text(query_filter)}%"
-        query += " AND (food_name LIKE ? OR search_text LIKE ? OR source_food_id LIKE ?)"
-        params.extend([wildcard_name, wildcard_search, wildcard_name])
+        fuzzy_search = "%" + "%".join(token for token in normalize_text(query_filter).split() if token) + "%"
+        query += """
+        AND (
+            fm.search_text LIKE ?
+            OR fm.search_text LIKE ?
+            OR fa.alias LIKE ?
+        )
+        """
+        params.extend([wildcard_search, fuzzy_search, wildcard_search])
 
     if category_filter:
-        query += " AND food_category = ?"
+        query += " AND fm.food_category = ?"
         params.append(category_filter)
 
-    query += " ORDER BY food_name ASC LIMIT 50"
-    return conn.execute(query, params).fetchall()
+    query += " ORDER BY fm.food_name ASC LIMIT 51"
+    rows = conn.execute(query, params).fetchall()
+    return rows[:50], len(rows) > 50
 
 
 def load_selected_food(conn, selected_food_id: int | None):
@@ -190,7 +202,7 @@ def render_admin_page(
 ):
     conn = get_db_connection()
     categories = load_categories(conn)
-    food_results = load_food_search_results(conn, query_filter or None, category_filter or None)
+    food_results, has_more_results = load_food_search_results(conn, query_filter or None, category_filter or None)
     selected_food = load_selected_food(conn, selected_food_id)
     conn.close()
 
@@ -206,6 +218,7 @@ def render_admin_page(
             "category_filter": category_filter,
             "categories": categories,
             "food_results": food_results,
+            "has_more_results": has_more_results,
             "selected_food": selected_food,
             "food_form": effective_form,
             "error": error,
@@ -214,13 +227,27 @@ def render_admin_page(
         status_code=status_code,
     )
 
+def get_next_admin_source_food_id(conn) -> str:
+    row = conn.execute(
+        """
+        SELECT COALESCE(MAX(CAST(source_food_id AS INTEGER)), 90000) AS max_source_food_id
+        FROM food_master
+        WHERE CAST(source_food_id AS INTEGER) > 90000
+        """
+    ).fetchone()
+    return str((row["max_source_food_id"] or 90000) + 1)
 
+#
+#   Food-master admin routes
+#
 @router.get("/admin-food", response_class=HTMLResponse)
 async def admin_page(
     request: Request,
     query_filter: str | None = None,
     category_filter: str | None = None,
     selected_food_id: int | None = None,
+    success: str | None = None,
+    error: str | None = None,
 ):
     redirect = login_redirect(request)
     if redirect:
@@ -233,6 +260,8 @@ async def admin_page(
         query_filter=(query_filter or "").strip(),
         category_filter=(category_filter or "").strip(),
         selected_food_id=selected_food_id,
+        success=success,
+        error=error,
     )
 
 
@@ -250,14 +279,14 @@ async def create_food_master(
     fiber_100g: str = Form(default=""),
     sugar_100g: str = Form(default=""),
     salt_100g: str = Form(default=""),
-    source: str = Form(...),
-    source_food_id: str = Form(...),
 ):
     redirect = login_redirect(request)
     if redirect:
         return redirect
 
     user = require_admin(request)
+
+    source = "admin"
 
     search_text = normalize_text(food_name)
 
@@ -271,8 +300,6 @@ async def create_food_master(
         "fiber_100g": fiber_100g,
         "sugar_100g": sugar_100g,
         "salt_100g": salt_100g,
-        "source": source,
-        "source_food_id": source_food_id,
     }
 
     try:
@@ -290,7 +317,9 @@ async def create_food_master(
 
     conn = get_db_connection()
     try:
-        ensure_food_master_unique(conn, parsed["source"], parsed["source_food_id"])
+        #   Get the next source_food_id for admin-created foods. Admin foods will have source_food_id > 90000
+        source_food_id = get_next_admin_source_food_id(conn)
+        ensure_food_master_unique(conn, source, source_food_id)
         cursor = conn.execute(
             """
             INSERT INTO food_master (
@@ -319,12 +348,11 @@ async def create_food_master(
                 parsed["fiber_100g"],
                 parsed["sugar_100g"],
                 parsed["salt_100g"],
-                parsed["source"],
-                parsed["source_food_id"],
+                source,
+                source_food_id,
             ),
         )
         conn.commit()
-        new_food_id = cursor.lastrowid
     except ValueError as exc:
         conn.close()
         return render_admin_page(
@@ -339,7 +367,7 @@ async def create_food_master(
     conn.close()
 
     return RedirectResponse(
-        url=build_admin_url(query_filter.strip(), category_filter.strip(), new_food_id),
+        url=build_admin_url(query_filter.strip(), category_filter.strip(), None, "Food created successfully.", None),
         status_code=303,
     )
 
@@ -359,8 +387,6 @@ async def update_food_master(
     fiber_100g: str = Form(default=""),
     sugar_100g: str = Form(default=""),
     salt_100g: str = Form(default=""),
-    source: str = Form(...),
-    source_food_id: str = Form(...),
 ):
     redirect = login_redirect(request)
     if redirect:
@@ -380,8 +406,6 @@ async def update_food_master(
         "fiber_100g": fiber_100g,
         "sugar_100g": sugar_100g,
         "salt_100g": salt_100g,
-        "source": source,
-        "source_food_id": source_food_id,
     }
 
     try:
@@ -413,7 +437,6 @@ async def update_food_master(
         )
 
     try:
-        ensure_food_master_unique(conn, parsed["source"], parsed["source_food_id"], exclude_id=food_id)
         conn.execute(
             """
             UPDATE food_master
@@ -426,9 +449,7 @@ async def update_food_master(
                 fat_100g = ?,
                 fiber_100g = ?,
                 sugar_100g = ?,
-                salt_100g = ?,
-                source = ?,
-                source_food_id = ?
+                salt_100g = ?
             WHERE id = ?
             """,
             (
@@ -442,8 +463,6 @@ async def update_food_master(
                 parsed["fiber_100g"],
                 parsed["sugar_100g"],
                 parsed["salt_100g"],
-                parsed["source"],
-                parsed["source_food_id"],
                 food_id,
             ),
         )
@@ -463,7 +482,7 @@ async def update_food_master(
     conn.close()
 
     return RedirectResponse(
-        url=build_admin_url(query_filter.strip(), category_filter.strip(), food_id),
+        url=build_admin_url(query_filter.strip(), category_filter.strip(), None, "Food updated successfully.", None),
         status_code=303,
     )
 
@@ -515,6 +534,6 @@ async def delete_food_master(
     conn.close()
 
     return RedirectResponse(
-        url=build_admin_url(query_filter.strip(), category_filter.strip()),
+        url=build_admin_url(query_filter.strip(), category_filter.strip(), None, "Food deleted successfully.", None),
         status_code=303,
     )

@@ -3,165 +3,315 @@
 {% block title %}Admin{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-    <div class="mb-4">
-        <h1 class="h3 mb-1">Food Master</h1>
-        <p class="text-muted mb-0">Manage canonical food records only. Aliases stay on the separate alias admin page.</p>
+<section class="page-head">
+    <div class="page-head-main">
+        <p class="eyebrow">Admin</p>
+        <h1>Food records</h1>
+        <p class="muted">Manage canonical food records only. Aliases stay on the separate alias admin page.</p>
+    </div>
+</section>
+
+{% if error %}
+<div class="form-error">{{ error }}</div>
+{% endif %}
+
+{% if success %}
+<div class="form-success">{{ success }}</div>
+{% endif %}
+
+<section class="detail-card">
+    <div class="section-head">
+        <div>
+            <h3>Find food</h3>
+            <p class="muted">Search canonical foods by name, source id, or category.</p>
+        </div>
     </div>
 
-    {% if error %}
-    <div class="alert alert-danger" role="alert">{{ error }}</div>
-    {% endif %}
+    <form method="get" action="/admin-food" class="alias-editor-form">
+        <div class="admin-search-grid">
+            <label>
+                Search food
+                <input
+                    type="text"
+                    name="query_filter"
+                    value="{{ query_filter or '' }}"
+                    placeholder="Chicken, yogurt, 12345..."
+                >
+            </label>
 
-    {% if success %}
-    <div class="alert alert-success" role="alert">{{ success }}</div>
-    {% endif %}
+            <label>
+                Category
+                <select name="category_filter">
+                    <option value="">All categories</option>
+                    {% for category in categories %}
+                    <option value="{{ category }}" {% if category_filter == category %}selected{% endif %}>
+                        {{ category }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </label>
+        </div>
 
-    <div class="row g-4">
-        <div class="col-12 col-xl-4">
-            <div class="card shadow-sm mb-4">
-                <div class="card-header">
-                    <h2 class="h5 mb-0">Find food</h2>
-                </div>
-                <div class="card-body">
-                    <form method="get" action="/admin-food" class="row g-3">
-                        <div class="col-12">
-                            <label for="query_filter" class="form-label">Search food</label>
-                            <input id="query_filter" name="query_filter" type="text" class="form-control" value="{{ query_filter }}" placeholder="Name or source id">
-                        </div>
-                        <div class="col-12">
-                            <label for="category_filter" class="form-label">Category</label>
-                            <select id="category_filter" name="category_filter" class="form-select">
-                                <option value="">All categories</option>
-                                {% for category in categories %}
-                                <option value="{{ category }}" {% if category_filter == category %}selected{% endif %}>{{ category }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col-12 d-flex gap-2">
-                            <button type="submit" class="btn btn-primary">Search</button>
-                            <a href="/admin-food" class="btn btn-outline-secondary">Clear</a>
-                        </div>
-                    </form>
+        <div class="alias-editor-actions">
+            <button type="submit" class="btn btn-primary">Search</button>
+            <a href="/admin-food" class="btn btn-secondary">Clear</a>
+        </div>
+    </form>
+
+    {% if food_results %}
+    <div class="admin-results-list">
+        {% for food in food_results %}
+        <div class="admin-result-row">
+            <div class="admin-result-copy">
+                <strong>{{ food.food_name }}</strong>
+                <div class="admin-result-meta">
+                    {{ food.food_category or 'Uncategorised' }}
+                    · {{ food.calories_100g if food.calories_100g is not none else '—' }} kcal / 100g
                 </div>
             </div>
 
-            <div class="card shadow-sm">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h2 class="h5 mb-0">Search results</h2>
-                    <span class="badge text-bg-secondary">{{ food_results|length }}</span>
-                </div>
-                <div class="list-group list-group-flush">
-                    {% if food_results %}
-                        {% for food in food_results %}
-                        <a href="/admin-food?query_filter={{ query_filter | urlencode }}&category_filter={{ category_filter | urlencode }}&selected_food_id={{ food.id }}" class="list-group-item list-group-item-action {% if selected_food and selected_food.id == food.id %}active{% endif %}">
-                            <div class="fw-semibold">{{ food.food_name }}</div>
-                            <div class="small {% if selected_food and selected_food.id == food.id %}text-white-50{% else %}text-muted{% endif %}">
-                                {{ food.food_category or 'Uncategorised' }} · {{ food.calories_100g if food.calories_100g is not none else '—' }} kcal / 100g
-                            </div>
-                            <div class="small {% if selected_food and selected_food.id == food.id %}text-white-50{% else %}text-muted{% endif %}">
-                                {{ food.source }} / {{ food.source_food_id }}
-                            </div>
-                        </a>
-                        {% endfor %}
-                    {% elif query_filter or category_filter %}
-                        <div class="list-group-item text-muted">No foods found for the selected filters.</div>
-                    {% else %}
-                        <div class="list-group-item text-muted">Use the filters or create a new food record.</div>
-                    {% endif %}
-                </div>
+            <div class="admin-result-action">
+                <a
+                    href="/admin-food?selected_food_id={{ food.id }}{% if query_filter %}&query_filter={{ query_filter | urlencode }}{% endif %}{% if category_filter %}&category_filter={{ category_filter | urlencode }}{% endif %}"
+                    class="btn btn-secondary"
+                >
+                    Manage food
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+        {% if has_more_results %}
+        <p class="muted-copy">Showing the first 50 matches. Refine your search to see a narrower result set.</p>
+        {% endif %}
+    {% elif query_filter or category_filter %}
+    <p class="muted-copy">No foods found for the selected filters.</p>
+    {% endif %}
+</section>
+
+<section class="detail-card">
+    <div class="section-head">
+        <div>
+            <h3>Create food</h3>
+            <p class="muted">Add a new canonical food record.</p>
+        </div>
+    </div>
+
+    <form method="post" action="/admin-food/food-master/create" class="alias-editor-form">
+        <input type="hidden" name="query_filter" value="{{ query_filter or '' }}">
+        <input type="hidden" name="category_filter" value="{{ category_filter or '' }}">
+
+        <label>
+            Food name
+            <input
+                type="text"
+                name="food_name"
+                value="{% if not selected_food %}{{ food_form.food_name }}{% endif %}"
+                required
+            >
+        </label>
+
+        <label>
+            Category
+            <select name="food_category">
+                <option value="">Uncategorised</option>
+                {% for category in categories %}
+                <option value="{{ category }}" {% if not selected_food and food_form.food_category == category %}selected{% endif %}>
+                    {{ category }}
+                </option>
+                {% endfor %}
+            </select>
+        </label>
+
+        <div class="nutrition-grid">
+            <label>
+                Calories / 100g
+                <input type="number" step="0.01" name="calories_100g" value="{{ food_form.calories_100g }}">
+            </label>
+
+            <label>
+                Protein / 100g
+                <input type="number" step="0.01" name="protein_100g" value="{{ food_form.protein_100g }}">
+            </label>
+
+            <label>
+                Carbs / 100g
+                <input type="number" step="0.01" name="carbs_100g" value="{{ food_form.carbs_100g }}">
+            </label>
+
+            <label>
+                Fat / 100g
+                <input type="number" step="0.01" name="fat_100g" value="{{ food_form.fat_100g }}">
+            </label>
+
+            <label>
+                Fiber / 100g
+                <input type="number" step="0.01" name="fiber_100g" value="{{ food_form.fiber_100g }}">
+            </label>
+
+            <label>
+                Sugar / 100g
+                <input type="number" step="0.01" name="sugar_100g" value="{{ food_form.sugar_100g }}">
+            </label>
+
+            <label>
+                Salt / 100g
+                <input type="number" step="0.01" name="salt_100g" value="{{ food_form.salt_100g }}">
+            </label>
+        </div>
+
+        <div class="alias-editor-actions">
+            <button type="submit" class="btn btn-primary">Create food</button>
+        </div>
+    </form>
+</section>
+
+<dialog class="settings-dialog" id="food-manager-dialog">
+    <div class="dialog-body">
+        <div class="dialog-header">
+            <div class="page-head">
+                <p class="eyebrow">Admin</p>
+                <h2>Food manager</h2>
+                {% if selected_food %}
+                <p class="muted-copy">
+                    {{ selected_food.food_name }} · {{ selected_food.food_category or 'Uncategorised' }}
+                </p>
+                {% else %}
+                <p class="muted-copy">Select a food from the search results to manage it.</p>
+                {% endif %}
             </div>
         </div>
 
-        <div class="col-12 col-xl-8">
-            <div class="card shadow-sm">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h2 class="h5 mb-0">{% if selected_food %}Edit food{% else %}Create food{% endif %}</h2>
-                    {% if selected_food %}
-                    <a href="/admin-food?query_filter={{ query_filter | urlencode }}&category_filter={{ category_filter | urlencode }}" class="btn btn-sm btn-outline-secondary">New food</a>
-                    {% endif %}
-                </div>
-                <div class="card-body">
-                    {% if selected_food %}
-                    <div class="alert alert-light border small">
-                        Aliases are managed on the separate alias admin page. This screen only edits the canonical food record.
-                    </div>
-                    {% endif %}
+        {% if selected_food %}
+        <form
+            method="post"
+            action="/admin-food/food-master/update/{{ selected_food.id }}"
+            class="alias-editor-form"
+        >
+            <input type="hidden" name="query_filter" value="{{ query_filter or '' }}">
+            <input type="hidden" name="category_filter" value="{{ category_filter or '' }}">
 
-                    <form method="post" action="{% if selected_food %}/admin-food/food-master/update/{{ selected_food.id }}{% else %}/admin-food/food-master/create{% endif %}" class="row g-3">
-                        <input type="hidden" name="query_filter" value="{{ query_filter }}">
-                        <input type="hidden" name="category_filter" value="{{ category_filter }}">
+            <label>
+                Food name
+                <input
+                    type="text"
+                    name="food_name"
+                    value="{{ food_form.food_name }}"
+                    required
+                >
+            </label>
 
-                        <div class="col-md-6">
-                            <label for="food_name" class="form-label">Food name</label>
-                            <input id="food_name" name="food_name" type="text" class="form-control" value="{{ food_form.food_name }}" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="food_category" class="form-label">Category</label>
-                            <select id="food_category" name="food_category" class="form-select">
-                                <option value="">Select category</option>
-                                {% for category in categories %}
-                                    <option value="{{ category }}" {% if food_form.food_category == category %}selected{% endif %}>
-                                        {{ category }}
-                                    </option>
-                                {% endfor %}
-                            </select>
-                        </div>
+            <label>
+                Category
+                <input
+                    type="text"
+                    name="food_category"
+                    value="{{ food_form.food_category }}"
+                    placeholder="Protein, dairy, carbs..."
+                >
+            </label>
 
-                        <div class="col-md-6">
-                            <label for="source" class="form-label">Source</label>
-                            <input id="source" name="source" type="text" class="form-control" value="{{ food_form.source }}" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="source_food_id" class="form-label">Source food id</label>
-                            <input id="source_food_id" name="source_food_id" type="text" class="form-control" value="{{ food_form.source_food_id }}" required>
-                        </div>
+            <div class="nutrition-grid">
+                <label>
+                    Calories / 100g
+                    <input type="number" step="0.01" name="calories_100g" value="{{ food_form.calories_100g }}">
+                </label>
 
-                        <div class="col-md-4">
-                            <label for="calories_100g" class="form-label">Calories / 100g</label>
-                            <input id="calories_100g" name="calories_100g" type="text" inputmode="decimal" class="form-control" value="{{ food_form.calories_100g }}">
-                        </div>
-                        <div class="col-md-4">
-                            <label for="protein_100g" class="form-label">Protein / 100g</label>
-                            <input id="protein_100g" name="protein_100g" type="text" inputmode="decimal" class="form-control" value="{{ food_form.protein_100g }}">
-                        </div>
-                        <div class="col-md-4">
-                            <label for="carbs_100g" class="form-label">Carbs / 100g</label>
-                            <input id="carbs_100g" name="carbs_100g" type="text" inputmode="decimal" class="form-control" value="{{ food_form.carbs_100g }}">
-                        </div>
-                        <div class="col-md-4">
-                            <label for="fat_100g" class="form-label">Fat / 100g</label>
-                            <input id="fat_100g" name="fat_100g" type="text" inputmode="decimal" class="form-control" value="{{ food_form.fat_100g }}">
-                        </div>
-                        <div class="col-md-4">
-                            <label for="fiber_100g" class="form-label">Fiber / 100g</label>
-                            <input id="fiber_100g" name="fiber_100g" type="text" inputmode="decimal" class="form-control" value="{{ food_form.fiber_100g }}">
-                        </div>
-                        <div class="col-md-4">
-                            <label for="sugar_100g" class="form-label">Sugar / 100g</label>
-                            <input id="sugar_100g" name="sugar_100g" type="text" inputmode="decimal" class="form-control" value="{{ food_form.sugar_100g }}">
-                        </div>
-                        <div class="col-md-4">
-                            <label for="salt_100g" class="form-label">Salt / 100g</label>
-                            <input id="salt_100g" name="salt_100g" type="text" inputmode="decimal" class="form-control" value="{{ food_form.salt_100g }}">
-                        </div>
+                <label>
+                    Protein / 100g
+                    <input type="number" step="0.01" name="protein_100g" value="{{ food_form.protein_100g }}">
+                </label>
 
-                        <div class="col-12 d-flex flex-wrap gap-2">
-                            <button type="submit" class="btn btn-primary">{% if selected_food %}Save changes{% else %}Create food{% endif %}</button>
-                        </div>
-                    </form>
+                <label>
+                    Carbs / 100g
+                    <input type="number" step="0.01" name="carbs_100g" value="{{ food_form.carbs_100g }}">
+                </label>
 
-                    {% if selected_food %}
-                    <hr class="my-4">
-                    <form method="post" action="/admin-food/food-master/delete/{{ selected_food.id }}">
-                        <input type="hidden" name="query_filter" value="{{ query_filter }}">
-                        <input type="hidden" name="category_filter" value="{{ category_filter }}">
-                        <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Delete this food? This only works when no aliases exist for it.');">Delete food</button>
-                    </form>
-                    {% endif %}
-                </div>
+                <label>
+                    Fat / 100g
+                    <input type="number" step="0.01" name="fat_100g" value="{{ food_form.fat_100g }}">
+                </label>
+
+                <label>
+                    Fiber / 100g
+                    <input type="number" step="0.01" name="fiber_100g" value="{{ food_form.fiber_100g }}">
+                </label>
+
+                <label>
+                    Sugar / 100g
+                    <input type="number" step="0.01" name="sugar_100g" value="{{ food_form.sugar_100g }}">
+                </label>
+
+                <label>
+                    Salt / 100g
+                    <input type="number" step="0.01" name="salt_100g" value="{{ food_form.salt_100g }}">
+                </label>
             </div>
+
+            <div class="alias-editor-actions">
+                <button type="submit" class="btn btn-primary">Save changes</button>
+                <a
+                    href="/admin-food{% if query_filter or category_filter %}?{% endif %}{% if query_filter %}query_filter={{ query_filter | urlencode }}{% endif %}{% if query_filter and category_filter %}&{% endif %}{% if category_filter %}category_filter={{ category_filter | urlencode }}{% endif %}"
+                    class="btn btn-secondary"
+                >
+                    Close
+                </a>
+            </div>
+        </form>
+
+        <div class="alias-editor-item">
+            <form
+                method="post"
+                action="/admin-food/food-master/delete/{{ selected_food.id }}"
+                onsubmit="return confirm('Delete this food record? This cannot be undone.');"
+            >
+                <input type="hidden" name="query_filter" value="{{ query_filter or '' }}">
+                <input type="hidden" name="category_filter" value="{{ category_filter or '' }}">
+
+                <div class="alias-editor-actions">
+                    <button type="submit" class="btn btn-secondary">Delete food</button>
+                </div>
+            </form>
         </div>
+        {% else %}
+        <p class="muted-copy">No food selected.</p>
+        <div class="alias-editor-actions">
+            <a href="/admin-food" class="btn btn-secondary">Close</a>
+        </div>
+        {% endif %}
     </div>
-</div>
+</dialog>
+
+{% if selected_food %}
+<script>
+(() => {
+    const dialog = document.getElementById("food-manager-dialog");
+    if (!dialog) return;
+
+    const closeUrl = "/admin-food{% if query_filter or category_filter %}?{% endif %}{% if query_filter %}query_filter={{ query_filter | urlencode }}{% endif %}{% if query_filter and category_filter %}&{% endif %}{% if category_filter %}category_filter={{ category_filter | urlencode }}{% endif %}";
+
+    if (!dialog.open) {
+        dialog.showModal();
+    }
+
+    dialog.addEventListener("cancel", (event) => {
+        event.preventDefault();
+        window.location.href = closeUrl;
+    });
+
+    dialog.addEventListener("click", (event) => {
+        const rect = dialog.getBoundingClientRect();
+        const inside =
+            event.clientX >= rect.left &&
+            event.clientX <= rect.right &&
+            event.clientY >= rect.top &&
+            event.clientY <= rect.bottom;
+
+        if (!inside) {
+            window.location.href = closeUrl;
+        }
+    });
+})();
+</script>
+{% endif %}
 {% endblock %}

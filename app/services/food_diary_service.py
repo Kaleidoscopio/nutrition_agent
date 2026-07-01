@@ -1,5 +1,6 @@
 from fastapi import Request
 from app.core.templates import templates
+from app.core.text import normalize_text
 
 #   Constants
 AUTO_CALC_UNITS = {"g", "gram", "grams", "ml"}
@@ -66,16 +67,10 @@ def calculate_nutrition(food_row, quantity: float, unit: str):
     }
 
 #
-#   Normalization function for food text
-#
-def normalize_food_text(value: str) -> str:
-    return " ".join((value or "").strip().lower().split())
-
-#
 #   Match food name on Database
 #
 def match_food(conn, typed_food: str):
-    normalized = normalize_food_text(typed_food)
+    normalized = normalize_text(typed_food)
     if not normalized:
         return None
 
@@ -167,60 +162,35 @@ def recalculate_daily_meal_total(conn, daily_meal_id: int):
 #   Search for all possible food matches
 #
 def search_food_matches(conn, typed_food: str):
-    search = normalize_food_text(typed_food)
+    search = normalize_text(typed_food)
     if not search:
         return []
 
     like = f"%{search}%"
+    fuzzy_like = "%" + "%".join(token for token in like.split() if token) + "%"
 
     rows = conn.execute(
         """
         SELECT DISTINCT
-            x.id,
-            x.food_name,
-            x.food_category,
-            x.calories_100g,
-            x.protein_100g,
-            x.carbs_100g,
-            x.fat_100g
-        FROM (
-            SELECT
-                fm.id,
-                fm.food_name,
-                fm.food_category,
-                fm.calories_100g,
-                fm.protein_100g,
-                fm.carbs_100g,
-                fm.fat_100g
-            FROM food_master fm
-            WHERE lower(fm.food_name) LIKE ?
-               OR lower(coalesce(fm.search_text, '')) LIKE ?
-
-            UNION
-
-            SELECT
-                fm.id,
-                fm.food_name,
-                fm.food_category,
-                fm.calories_100g,
-                fm.protein_100g,
-                fm.carbs_100g,
-                fm.fat_100g
-            FROM food_alias fa
-            JOIN food_master fm ON fm.id = fa.food_id
-            WHERE lower(fa.alias) LIKE ?
-        ) AS x
+            fm.id,
+            fm.food_name,
+            fm.food_category,
+            fm.calories_100g,
+            fm.protein_100g,
+            fm.carbs_100g,
+            fm.fat_100g
+        FROM food_master fm
+        LEFT JOIN food_alias fa ON fa.food_id = fm.id
+        WHERE
+            fm.search_text LIKE ? OR
+            fm.search_text LIKE ? OR
+            fa.alias LIKE ?
         ORDER BY
-            CASE
-                WHEN lower(x.food_name) = ? THEN 1
-                WHEN lower(x.food_name) LIKE ? THEN 2
-                ELSE 3
-            END,
-            x.food_category,
-            x.food_name
+            fm.food_category,
+            fm.food_name
         LIMIT 20
         """,
-        (like, like, like, search, f"{search}%"),
+        (like, fuzzy_like, like),
     ).fetchall()
 
     return [dict(row) for row in rows]
