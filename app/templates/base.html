@@ -36,6 +36,7 @@
         {% endif %}
         {% if user and user.user_name == "admin" %}
             <a href="/admin-alias" class="{% if request.url.path == '/admin-alias' %}active{% endif %}">Food Alias</a>
+            <a href="/admin-food" class="{% if request.url.path == '/admin-food' %}active{% endif %}">Food Master</a>
         {% endif %}
         {% if user %}
             <a href="/settings" class="{% if request.url.path == '/settings' %}active{% endif %}" 
@@ -61,6 +62,7 @@
         {% endif %}
         {% if user and user.user_name == "admin" %}
             <a href="/admin-alias" class="{% if request.url.path == '/admin-alias' %}active{% endif %}">Food Alias</a>
+            <a href="/admin-food" class="{% if request.url.path == '/admin-food' %}active{% endif %}">Food Master</a>
         {% endif %}
         {% if user %}
             <a href="/settings" class="{% if request.url.path == '/settings' %}active{% endif %}" 
