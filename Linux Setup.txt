@@ -13,6 +13,7 @@ source venv/bin/activate
 
 # Install Uvicorn and the app framework
 pip install uvicorn fastapi
+pip install psycopg2
 
 # Or use the requirements file and run
 pip install -r requirements.txt
