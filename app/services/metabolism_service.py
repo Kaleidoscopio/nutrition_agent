@@ -10,14 +10,17 @@ ACTIVITY_FACTORS = {
 }
 
 
-def calculate_age(date_of_birth: str) -> int | None:
+def calculate_age(date_of_birth) -> int | None:
     if not date_of_birth:
         return None
 
-    try:
-        dob = date.fromisoformat(date_of_birth)
-    except ValueError:
-        return None
+    if isinstance(date_of_birth, date):
+        dob = date_of_birth
+    else:
+        try:
+            dob = date.fromisoformat(date_of_birth)
+        except (ValueError, TypeError):
+            return None
 
     today = date.today()
     return today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))

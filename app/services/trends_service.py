@@ -127,7 +127,7 @@ def build_trends_payload(conn, user_name: str, period: str):
     SELECT COALESCE(SUM(daily_kcal), 0) AS kcal_today
     FROM daily_meal
     WHERE user_name = ?
-      AND entry_date = date('now')
+      AND entry_date = CURRENT_DATE
     """
 
     profile_sql = """
@@ -208,11 +208,11 @@ def load_trends_history(conn, user_name: str, start_date: str, end_date: str):
     rows = conn.execute(
         """
         WITH RECURSIVE dates(day) AS (
-            SELECT ?
+            SELECT ?::date
             UNION ALL
-            SELECT date(day, '+1 day')
+            SELECT day + 1
             FROM dates
-            WHERE day < ?
+            WHERE day < ?::date
         ),
         intake AS (
             SELECT
@@ -266,7 +266,7 @@ def load_trends_history(conn, user_name: str, start_date: str, end_date: str):
               AND dw.entry_date BETWEEN ? AND ?
         )
         SELECT
-            d.day,
+            d.day::text AS day,
             COALESCE(i.calories_in, 0) AS calories_in,
             COALESCE(a.logged_activity_kcal, 0) AS calories_out,
             COALESCE(a.bmr_kcal, 0) AS bmr_kcal,

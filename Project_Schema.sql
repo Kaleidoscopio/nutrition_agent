@@ -1,7 +1,7 @@
 -- 1. EXPENDITURE & ACTIVITY SUMMARY
 CREATE TABLE "daily_expenditure" (
 	"id"	INTEGER GENERATED ALWAYS AS IDENTITY,
-	"entry_date"	TEXT NOT NULL,
+	"entry_date"	DATE NOT NULL,
 	"user_name"	TEXT NOT NULL,
 	"status"	TEXT NOT NULL CHECK("status" IN ('partial', 'complete', 'processed')),
 	"bmr_kcal"	INTEGER DEFAULT 0,
@@ -31,7 +31,7 @@ CREATE TABLE "log_activities" (
 -- 3. BODY METRICS (Weight and composition tracking)
 CREATE TABLE "body_metrics" (
 	"id"	INTEGER GENERATED ALWAYS AS IDENTITY,
-	"entry_date"	TEXT NOT NULL,
+	"entry_date"	DATE NOT NULL,
 	"user_name"	TEXT NOT NULL,
 	"weight_kg"	REAL,
 	"bmi"	REAL,
@@ -43,7 +43,7 @@ CREATE TABLE "body_metrics" (
 
 CREATE TABLE "daily_meal" (
 	"id"	INTEGER GENERATED ALWAYS AS IDENTITY,
-	"entry_date"	TEXT,
+	"entry_date"	DATE,
 	"meal_status"	TEXT NOT NULL CHECK("meal_status" IN ('partial', 'complete', 'processed')),
 	"user_name"	TEXT NOT NULL,
 	"daily_kcal"	INTEGER,
@@ -54,7 +54,7 @@ CREATE TABLE "daily_meal" (
 
 CREATE TABLE "daily_meal_detail" (
 	"id"	INTEGER GENERATED ALWAYS AS IDENTITY,
-	"created_at"	TEXT DEFAULT CURRENT_TIMESTAMP,
+	"created_at"	TIMESTAMPTZ DEFAULT now(),
 	"daily_meal_id"	INTEGER NOT NULL,
 	"meal_type"	TEXT NOT NULL CHECK("meal_type" IN ('breakfast', 'lunch', 'dinner', 'snacks')),
 	"food_id"	INTEGER NOT NULL,
@@ -92,7 +92,7 @@ CREATE TABLE "food_master" (
 	"salt_100g"	REAL,
 	"source"	TEXT NOT NULL,
 	"source_food_id"	TEXT NOT NULL,
-	"created_at"	TEXT DEFAULT CURRENT_TIMESTAMP,
+	"created_at"	TIMESTAMPTZ DEFAULT now(),
 	PRIMARY KEY("id"),
 	UNIQUE("source","source_food_id")
 );
@@ -103,20 +103,20 @@ CREATE TABLE "users" (
 	"email"	TEXT UNIQUE,
 	"password_hash"	TEXT NOT NULL,
 	"display_name"	TEXT,
-	"is_active"	INTEGER NOT NULL DEFAULT 1,
-	"created_at"	TEXT DEFAULT CURRENT_TIMESTAMP,
+	"is_active"	BOOLEAN NOT NULL DEFAULT TRUE,
+	"created_at"	TIMESTAMPTZ DEFAULT now(),
 	"sex"	TEXT,
-	"date_of_birth"	TEXT,
+	"date_of_birth"	DATE,
 	"height_cm"	REAL,
 	"start_weight_kg"	REAL,
 	"activity_level"	TEXT NOT NULL CHECK("activity_level" IN ('sedentary', 'light', 'moderate', 'very_active', 'extra_active')),
-	"must_change_password"	INTEGER NOT NULL DEFAULT 0,
+	"must_change_password"	BOOLEAN NOT NULL DEFAULT FALSE,
 	PRIMARY KEY("id")
 );
 
 CREATE TABLE "daily_water" (
     "id" INTEGER GENERATED ALWAYS AS IDENTITY,
-    "entry_date" TEXT NOT NULL,
+    "entry_date" DATE NOT NULL,
     "user_name" TEXT NOT NULL,
     "target_ml" INTEGER NOT NULL DEFAULT 2000,
     "consumed_ml" INTEGER NOT NULL DEFAULT 0,
@@ -128,4 +128,4 @@ CREATE TABLE "daily_water" (
 --	Create user admin with password "admin"
 INSERT INTO "users"
 	("user_name", "password_hash", "display_name", "activity_level", "must_change_password")
-	VALUES ('admin', '$2b$12$xPlz4jkJNo79sFRmnxxSQePuyDxEMaUKb5AYmSRQe8340QcxJxQjy', 'admin', 'light', 1);
+	VALUES ('admin', '$2b$12$xPlz4jkJNo79sFRmnxxSQePuyDxEMaUKb5AYmSRQe8340QcxJxQjy', 'admin', 'light', TRUE);
