@@ -30,6 +30,10 @@ def calculate_bmr(sex: str, age: int, height_cm: float, weight_kg: float) -> flo
     if not sex or age is None or not height_cm or not weight_kg:
         return None
 
+    height_cm = float(height_cm)
+    weight_kg = float(weight_kg)
+    age = int(age)
+
     sex = sex.strip().lower()
 
     if sex == "male":

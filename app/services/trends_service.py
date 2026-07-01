@@ -1,5 +1,6 @@
 from datetime import date, timedelta
 from statistics import mean
+from decimal import Decimal
 
 from app.services.metabolism_service import build_energy_summary
 
@@ -298,20 +299,28 @@ def load_trends_history(conn, user_name: str, start_date: str, end_date: str):
 
     history_rows = []
     for row in rows:
+        # Avoid Serialization error JSON "Object of type Decimal is not JSON serializable"
+        def clean_val(val, to_type=float):
+            if val is None:
+                return None
+            if isinstance(val, Decimal):
+                return to_type(val)
+            return val
+        
         history_rows.append({
             "day": row["day"],
-            "calories_in": row["calories_in"] or 0,
-            "calories_out": row["calories_out"] or 0,
-            "bmr_kcal": row["bmr_kcal"] or 0,
-            "activity_kcal": row["activity_kcal"] or 0,
-            "tdee_kcal": row["tdee_kcal"] or 0,
-            "net_balance_kcal": row["net_balance_kcal"] or 0,
-            "water_consumed_ml": row["water_consumed_ml"] or 0,
-            "water_target_ml": row["water_target_ml"] or 2000,
-            "weight_kg": row["weight_kg"],
-            "body_fat_pct": row["body_fat_pct"],
-            "muscle_mass_pct": row["muscle_mass_pct"],
-            "bmi": row["bmi"],
+            "calories_in": clean_val(row["calories_in"]),
+            "calories_out": clean_val(row["calories_out"])  ,
+            "bmr_kcal": clean_val(row["bmr_kcal"] or 0),
+            "activity_kcal": clean_val(row["activity_kcal"] or 0),
+            "tdee_kcal": clean_val(row["tdee_kcal"] or 0),
+            "net_balance_kcal": clean_val(row["net_balance_kcal"] or 0),
+            "water_consumed_ml": clean_val(row["water_consumed_ml"] or 0),
+            "water_target_ml": clean_val(row["water_target_ml"] or 2000),
+            "weight_kg": clean_val(row["weight_kg"]),
+            "body_fat_pct": clean_val(row["body_fat_pct"]),
+            "muscle_mass_pct": clean_val(row["muscle_mass_pct"]),
+            "bmi": clean_val(row["bmi"]),
         })
 
     return history_rows
