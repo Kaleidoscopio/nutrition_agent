@@ -125,7 +125,7 @@ def render_admin_page(
 
     return templates.TemplateResponse(
         request,
-        "admin.html",
+        "admin_alias.html",
         {
             "request": request,
             "user": user,
@@ -144,7 +144,7 @@ def render_admin_page(
     )
 
 
-@router.get("/admin", response_class=HTMLResponse)
+@router.get("/admin-alias", response_class=HTMLResponse)
 async def admin_page(
     request: Request,
     query_filter: str | None = None,
@@ -166,7 +166,7 @@ async def admin_page(
     )
 
 
-@router.post("/admin/food-alias/add")
+@router.post("/admin-alias/food-alias/add")
 async def add_food_alias(
     request: Request,
     selected_food_id: int = Form(...),
@@ -219,12 +219,12 @@ async def add_food_alias(
     conn.close()
 
     return RedirectResponse(
-        url=f"/admin?query_filter={query_filter}&category_filter={category_filter}&selected_food_id={selected_food_id}",
+        url=f"/admin-alias?query_filter={query_filter}&category_filter={category_filter}&selected_food_id={selected_food_id}",
         status_code=303,
     )
 
 
-@router.post("/admin/food-alias/update/{alias_id}")
+@router.post("/admin-alias/food-alias/update/{alias_id}")
 async def update_food_alias(
     request: Request,
     alias_id: int,
@@ -278,12 +278,12 @@ async def update_food_alias(
     conn.close()
 
     return RedirectResponse(
-        url=f"/admin?query_filter={query_filter}&category_filter={category_filter}&selected_food_id={selected_food_id}",
+        url=f"/admin-alias?query_filter={query_filter}&category_filter={category_filter}&selected_food_id={selected_food_id}",
         status_code=303,
     )
 
 
-@router.post("/admin/food-alias/delete/{alias_id}")
+@router.post("/admin-alias/food-alias/delete/{alias_id}")
 async def delete_food_alias(
     request: Request,
     alias_id: int,
@@ -306,6 +306,6 @@ async def delete_food_alias(
     conn.close()
 
     return RedirectResponse(
-        url=f"/admin?query_filter={query_filter}&category_filter={category_filter}&selected_food_id={selected_food_id}",
+        url=f"/admin-alias?query_filter={query_filter}&category_filter={category_filter}&selected_food_id={selected_food_id}",
         status_code=303,
     )
