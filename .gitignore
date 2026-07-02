@@ -8,3 +8,6 @@ TODO
 render_deploy.txt
 DEPLOY
 migration.py
+.env
+data/*
+MIGRATION_NOTES.md
