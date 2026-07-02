@@ -49,10 +49,10 @@ def calculate_nutrition(food_row, quantity: float, unit: str):
     if unit_normalized not in AUTO_CALC_UNITS:
         return None
 
-    calories_100g = food_row["calories_100g"]
-    protein_100g = food_row["protein_100g"]
-    carbs_100g = food_row["carbs_100g"]
-    fat_100g = food_row["fat_100g"]
+    calories_100g = float(food_row["calories_100g"])
+    protein_100g = float(food_row["protein_100g"])
+    carbs_100g = float(food_row["carbs_100g"])
+    fat_100g = float(food_row["fat_100g"])
 
     if calories_100g is None:
         return None
