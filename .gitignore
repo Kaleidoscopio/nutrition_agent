@@ -11,3 +11,6 @@ migration.py
 .env
 data/*
 MIGRATION_NOTES.md
+data
+.env
+MIGRATION_NOTES.md
